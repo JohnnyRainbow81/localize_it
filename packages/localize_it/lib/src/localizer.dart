@@ -23,6 +23,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
   late String baseFilePath;
   late String localizationFilePath;
+  late String formality;
 
   int missingLocalizationsCounter = 0;
   int successfullyLocalizedCounter = 0;
@@ -47,6 +48,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     useDeepL = deepLAuthKey.isNotEmpty;
     useGetX = visitor.useGetX;
     preferDoubleQuotes = visitor.preferDoubleQuotes;
+    formality = visitor.formality.isEmpty ? "default" : visitor.formality;
 
     escapedQuote = preferDoubleQuotes ? '"' : '\'';
     missingTranslationPlaceholderText =
@@ -467,6 +469,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         'text': text,
         'target_lang': language,
         'source_lang': baseLanguageCode.toUpperCase(),
+        'formality' : formality
       };
 
       final response = await http.post(url, body: body);

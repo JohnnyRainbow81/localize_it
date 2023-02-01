@@ -32,7 +32,7 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         backgroundColor: Colors.green[600],
         title: Text(
-          'Profile',
+          'Profile'.tr,
           style: TextStyle(
               fontSize: 44,
               color: Colors.green[100],
@@ -44,28 +44,21 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              height: 150,
-              width: 150,
-              decoration: BoxDecoration(
-                  color: Colors.blueGrey[50],
-                  borderRadius: BorderRadius.circular(100)),
-              child: Center(
-                  child: Text(
-                // ignore: prefer_single_quotes
-                "Das ist ein ewig langer Text der nervt. Er geht sogar über mehrere Zeilen. Wenn das funktioniert, freue ich mich sehr."
-                    .tr,
-                style: TextStyle(
-                    fontSize: 72,
-                    color: Colors.green[100],
-                    fontWeight: FontWeight.bold),
-              )),
+            Text(
+              // ignore: prefer_single_quotes
+              'Das ist ein ewig langer Text der nervt. Er geht sogar über mehrere Zeilen. Wenn das funktioniert, freue ich mich sehr.'.tr
+              ,
+              style: TextStyle(
+              fontSize: 16,
+              color: Colors.black,
+              fontWeight: FontWeight.bold),
             ),
             const SizedBox(
               height: 50,
             ),
             Text("I\'m Chris.".tr),
             Text("Wie geht\'s? Mir geht\'s gut.".tr),
+            Text('Funktioniert das hier auch?'.tr)
           ],
         ),
       ),

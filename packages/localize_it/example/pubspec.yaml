@@ -40,8 +40,6 @@ dependencies:
   get: ^4.6.5
   localize_it_annotation: ^2.0.0
 
-
-
 dev_dependencies:
 
   flutter_test:

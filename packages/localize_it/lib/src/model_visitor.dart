@@ -16,6 +16,8 @@ class ModelVisitor extends SimpleElementVisitor<dynamic> {
 
   late bool preferDoubleQuotes;
 
+  late String formality;
+
   @override
   dynamic visitLibraryElement(LibraryElement element) {
     return super.visitLibraryElement(element);
@@ -33,6 +35,8 @@ class ModelVisitor extends SimpleElementVisitor<dynamic> {
         baseLanguageCode = valueRaw!.toStringValue()!;
       } else if (element.name == 'deepLAuthKey') {
         deepLAuthKey = valueRaw!.toStringValue()!;
+      } else if (element.name == 'formality') {
+        formality = valueRaw!.toStringValue()!;
       }
     } else if (valueRaw?.toListValue() != null) {
       final list = valueRaw?.toListValue();
