@@ -18,6 +18,8 @@ class ModelVisitor extends SimpleElementVisitor<dynamic> {
 
   late String formality;
 
+  late bool asJsonFile;
+
   @override
   dynamic visitLibraryElement(LibraryElement element) {
     return super.visitLibraryElement(element);
@@ -49,6 +51,8 @@ class ModelVisitor extends SimpleElementVisitor<dynamic> {
         useGetX = valueRaw!.toBoolValue()!;
       } else if (element.name == 'preferDoubleQuotes') {
         preferDoubleQuotes = valueRaw!.toBoolValue()!;
+      } else if (element.name == 'asJsonFile') {
+        asJsonFile = valueRaw!.toBoolValue()!;
       }
     }
   }

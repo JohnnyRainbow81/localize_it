@@ -24,11 +24,12 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   late String baseFilePath;
   late String localizationFilePath;
   late String formality;
+  late bool asJsonFile;
 
   int missingLocalizationsCounter = 0;
   int successfullyLocalizedCounter = 0;
 
-  late final escapedQuote;
+  late final String escapedQuote;
   late final missingTranslationPlaceholderText;
 
   @override
@@ -49,10 +50,11 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     useGetX = visitor.useGetX;
     preferDoubleQuotes = visitor.preferDoubleQuotes;
     formality = visitor.formality.isEmpty ? "default" : visitor.formality;
+    asJsonFile = visitor.asJsonFile;
 
-    escapedQuote = preferDoubleQuotes ? '"' : '\'';
-    missingTranslationPlaceholderText =
-        '$escapedQuote--missing translation--$escapedQuote';
+    // If we prefer double quotes OR want a JSON file, use double quotes, else use single quotes
+    escapedQuote = (preferDoubleQuotes || asJsonFile) ? '"' : '\'';
+    missingTranslationPlaceholderText = '$escapedQuote--missing translation--$escapedQuote';
 
     final rawLocation = visitor.location;
 
@@ -215,16 +217,14 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     final completer = Completer<List<FileSystemEntity>>();
     final lister = directory.list(recursive: true);
     lister.listen((file) => files.add(file),
-        onError: (Object error) => completer.completeError(error),
-        onDone: () => completer.complete(files));
+        onError: (Object error) => completer.completeError(error), onDone: () => completer.complete(files));
     return completer.future;
   }
 
   /// Returns an iterable of all dart files in a list of [files].
-  Iterable<File> _getDartFiles(List<FileSystemEntity> files) =>
-      files.whereType<File>().where(
-            (file) => file.path.endsWith('.dart'),
-          );
+  Iterable<File> _getDartFiles(List<FileSystemEntity> files) => files.whereType<File>().where(
+        (file) => file.path.endsWith('.dart'),
+      );
 
   /// Reads, decodes and returns the content of a given [filePath]
   Future<String> _readFileContent(String filePath) async {
@@ -246,8 +246,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         word.lastIndexOf(preferDoubleQuotes ? '"' : '\'') + 1,
       );
 
-  String _basePath(FileSystemEntity fileEntity) =>
-      fileEntity.uri.pathSegments.last;
+  String _basePath(FileSystemEntity fileEntity) => fileEntity.uri.pathSegments.last;
 
   /// Writes all found Strings with the `tr` exentsion [fileNamesWithTranslation] into the base translation file.
   Future<void> _writeTranslationsToBaseFile(
@@ -256,11 +255,12 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     stdout.writeln('Updating base localization file...\n');
 
     await _writeTranslationsToFile(
+      // creates the base language file, like en.g.dart
       await _getBaseFile(),
       fileNamesWithTranslation,
       language: baseLanguageCode,
       writeKeyAndValue: (translation, sink) {
-        sink.writeln('\t$translation: $translation,');
+        sink.write('\t$translation: $translation');
       },
     );
 
@@ -288,20 +288,31 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }) async {
     final sink = file.openWrite();
 
-    sink.writeln('const Map<String, String> $language = {');
+    sink.writeln(asJsonFile ? '{ \n\t "$language" : {' : 'const Map<String, String> $language = {');
 
     // inkrementelles update von den files und nicht immer alles neuschreiben
-    await Future.forEach(fileNamesWithTranslation.entries, (
-      MapEntry<String, List<String>> entry,
-    ) async {
-      sink.writeln('\n\t//  ${entry.key}');
-      await Future.forEach(
-        entry.value,
-        (String translation) => writeKeyAndValue(translation, sink),
-      );
-    });
+    await Future.forEach(fileNamesWithTranslation.entries, (MapEntry<String, List<String>> entry) async {
+      // This adds a comment about which file the string to translate was found. Like "// login_screen.dart"
+      // Skip this for JSON, because JSON must not have comments
+      if (!asJsonFile) sink.writeln('\n\t//  ${entry.key}');
 
-    sink.writeln('};');
+      for (int i = 0; i < entry.value.length; i++) {
+        writeKeyAndValue(entry.value[i], sink);
+
+        if (entry.value.length - 1 != i) {
+          sink.write(',');
+        }
+        sink.write('\n');
+      }
+      // await Future.forEach(
+      //   entry.value,
+      //   (String translation) {
+      //     stdout.writeln("Writing $translation ...");
+      //     writeKeyAndValue(translation, sink);
+      //   },
+      // );
+    });
+    sink.writeln(asJsonFile ? '}\n }' : '};');
 
     await sink.flush();
     await sink.close();
@@ -312,9 +323,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   Future<List<File>> _getLocalizationFiles() async {
     final localizationFiles = <File>[];
     for (final code in supportedLanguageCodes) {
-      final file = File(
-        '$localizationFilePath/$code.g.dart',
-      );
+      final file = asJsonFile ? File('$localizationFilePath/$code.g.json') : File('$localizationFilePath/$code.g.dart');
       if (!file.existsSync()) {
         await file.create();
       }
@@ -324,9 +333,8 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   Future<File> _getBaseFile() async {
-    final file = File(
-      '$baseFilePath/$baseLanguageCode.g.dart',
-    );
+    final file =
+        asJsonFile ? File('$baseFilePath/$baseLanguageCode.g.json') : File('$baseFilePath/$baseLanguageCode.g.dart');
     if (!file.existsSync()) {
       await file.create();
     }
@@ -354,6 +362,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
   /// Updates each translation file and keeps track of all
   /// missing translations, or updates missing translations with the DeepL API
+  In dieser Funktion weitermachen! 
   Future<void> _updateTranslations(
     FileSystemEntity fileEntity,
     List<String> allTranslations,
@@ -364,19 +373,28 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     missingLocalizationsCounter = 0;
 
     stdout.writeln('Update localizations in ${_basePath(fileEntity)} ...\n');
+    stdout.writeln('fileNamesWithTranslation: $fileNamesWithTranslation');
 
     final fileContent = await _readFileContent(fileEntity.path);
 
     Map<String, String> oldTranslations = {};
 
+    // Gets called when translation files were already initiated
     if (fileContent.isNotEmpty) {
       final matchComments = RegExp(r'\/\/.*\n?');
+
       // Remove Comments
       var keysAndValues = fileContent.replaceAll(matchComments, '');
-      // Remove first line
-      keysAndValues = keysAndValues.split('= {')[1].trim();
-      // Remove last closing curly bracket
-      keysAndValues.substring(0, keysAndValues.length - 1);
+      stdout.writeln("keysAndValues before Json-manipulation: \n $keysAndValues");
+
+      if (asJsonFile) {
+        keysAndValues = _jsonToRawKeysAndValues(keysAndValues);
+      } else {
+        // Remove first line
+        keysAndValues = keysAndValues.split('= {')[1].trim();
+        // Remove last closing curly bracket
+        keysAndValues.substring(0, keysAndValues.length - 1);
+      }
 
       final splittedKeysAndValues = keysAndValues.split(',\n');
 
@@ -385,8 +403,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         if (keyAndValue.contains('$escapedQuote:')) {
           final keyAndValueSeperated = keyAndValue.split(escapedQuote);
           // Add single quote for key since it was removed when splitting it
-          oldTranslations['${keyAndValueSeperated[0].trim()}$escapedQuote'] =
-              keyAndValueSeperated[1].trim();
+          oldTranslations['${keyAndValueSeperated[0].trim()}$escapedQuote'] = keyAndValueSeperated[1].trim();
         }
       }
     }
@@ -406,19 +423,16 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
       fileNamesWithTranslation,
       language: language,
       writeKeyAndValue: (oldTranslationKey, sink) async {
-        final entryExistsForTranslation =
-            oldTranslations.containsKey(oldTranslationKey);
+        stdout.writeln("_writeTranslationsToFile with oldTranslationKey");
 
-        final entryExistsButIsEmpty = entryExistsForTranslation &&
-            (oldTranslations[oldTranslationKey] ?? '').isEmpty;
+        final entryExistsForTranslation = oldTranslations.containsKey(oldTranslationKey);
+
+        final entryExistsButIsEmpty = entryExistsForTranslation && (oldTranslations[oldTranslationKey] ?? '').isEmpty;
 
         final entryExistsButIsMissingTranslation =
-            oldTranslations[oldTranslationKey] ==
-                missingTranslationPlaceholderText;
+            oldTranslations[oldTranslationKey] == missingTranslationPlaceholderText;
 
-        final isMissing = !entryExistsForTranslation ||
-            entryExistsButIsEmpty ||
-            entryExistsButIsMissingTranslation;
+        final isMissing = !entryExistsForTranslation || entryExistsButIsEmpty || entryExistsButIsMissingTranslation;
 
         if (isMissing && !useDeepL) {
           missingLocalizationsCounter++;
@@ -458,9 +472,18 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     );
   }
 
+  String _jsonToRawKeysAndValues(String input) {
+    int lastPositionOfOpeningBrace = input.lastIndexOf('{') + 1;
+    int firstPositionOfClosingBrace = input.indexOf('}');
+    input = input.substring(lastPositionOfOpeningBrace, firstPositionOfClosingBrace);
+    stdout.writeln("keysAndValues after Json-manipulation: \n $input");
+    return input;
+  }
+
   /// Returns the translation for the given [text] and the [language] in which it should be translated
   /// via the DeepL API
   Future<String> _deepLTranslate(String text, String language) async {
+    stdout.writeln("Calling DeepL with $text for language $language");
     try {
       final url = Uri.https('api-free.deepl.com', '/v2/translate');
 
@@ -469,10 +492,12 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         'text': text,
         'target_lang': language,
         'source_lang': baseLanguageCode.toUpperCase(),
-        'formality' : formality
+        'formality': formality
       };
 
       final response = await http.post(url, body: body);
+
+      stdout.write(response);
 
       if (response.statusCode != 200) {
         stdout.writeln(

@@ -36,8 +36,9 @@ class LocaleConfiguration {
   /// See [prefer_single_quotes](https://dart-lang.github.io/linter/lints/prefer_single_quotes.html) for more info.
   /// However if you prefer using double quotes in your project you can do this by settings
   /// `preferDoubleQuotes` to  `true`.
-  static const bool preferDoubleQuotes = false;
+  static const bool preferDoubleQuotes = true;
 
+  /// How formal do you want DeepL's translations to be?
   /// Choose between:
   /// default (default)
   /// more - for a more formal language
@@ -45,4 +46,5 @@ class LocaleConfiguration {
   /// prefer_more - for a more formal language if available, otherwise fallback to default formality
   /// prefer_less - for a more informal language if available, otherwise fallback to default formality
   static const String formality = 'less';
+  static const bool asJsonFile = true;
 }

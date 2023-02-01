@@ -18,7 +18,7 @@ function activate(context) {
 
 		const clickedOnDirectory = fs.lstatSync(parentDirectory).isDirectory();
 
-		if(!clickedOnDirectory) {
+		if (!clickedOnDirectory) {
 			// Clicked on File so get the Parent Directory name
 			parentDirectory = path.dirname(args[0].path);
 		}
@@ -36,8 +36,8 @@ function activate(context) {
 
 		var content = fs.createWriteStream(configFilePath)
 		// Helper to write line by line 
-		const  writeLine = (line) => content.write(`${line}\n`);  	
-		writeLine('import \'package:localize_it_annotation/localize_it_annotation.dart\';');	
+		const writeLine = (line) => content.write(`${line}\n`);
+		writeLine('import \'package:localize_it_annotation/localize_it_annotation.dart\';');
 		content.write('\n');
 		writeLine('@localize_it');
 		writeLine('class LocaleConfiguration {');
@@ -47,7 +47,7 @@ function activate(context) {
 		writeLine('  /// on [DeepL](https://www.deepl.com/de/docs-api/translate-text/translate-text/).');
 		writeLine('  /// ');
 		writeLine('  /// Defaults to: \'de\' (German)');
- 		writeLine('  static const String baseLanguageCode = \'de\';');
+		writeLine('  static const String baseLanguageCode = \'de\';');
 		content.write('\n');
 		writeLine('  /// Expects language codes in **lowercase**.');
 		writeLine('  /// Should *not* contain `baseLanguageCode`.');
@@ -75,8 +75,17 @@ function activate(context) {
 		writeLine('  /// However if you prefer using double quotes in your project you can do this by settings ');
 		writeLine('  /// `preferDoubleQuotes` to  `true`.');
 		writeLine('  static const bool preferDoubleQuotes = false;');
+		writeLine('\n');
+		writeLine('	 /// How formal do you want DeepL\'s translations to be?');
+		writeLine('	 /// Choose between:');
+		writeLine('	 /// default (default)');
+		writeLine('	 /// more - for a more formal language');
+		writeLine('	 /// less - for a more informal language');
+		writeLine('	 /// prefer_more - for a more formal language if available, otherwise fallback to default formality');
+		writeLine('	 /// prefer_less - for a more informal language if available, otherwise fallback to default formality');
+		writeLine('  static const String formality = \'less\'');
 		writeLine('}');
-		content.end(); 
+		content.end();
 
 		// Write content fo file
 		fs.writeFileSync(configFilePath, content, 'utf8');
@@ -92,7 +101,7 @@ function activate(context) {
 }
 
 // This method is called when your extension is deactivated
-function deactivate() {}
+function deactivate() { }
 
 module.exports = {
 	activate,
