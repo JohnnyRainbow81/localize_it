@@ -46,7 +46,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Text(
               // ignore: prefer_single_quotes
-              'Das ist ein ewig langer Text der nervt. Er geht sogar über mehrere Zeilen. Wenn das funktioniert, freue ich mich sehr.'.tr
+              'Choose your destiny'.tr
               ,
               style: TextStyle(
               fontSize: 16,
@@ -57,8 +57,8 @@ class _ProfilePageState extends State<ProfilePage> {
               height: 50,
             ),
             Text("I\'m Chris.".tr),
-            Text("Wie geht\'s? Mir geht\'s gut.".tr),
-            Text('Funktioniert das hier auch?'.tr)
+            Text("How are you? I'm fine".tr),
+            Text('Would this be a problem for you to be punctual tomorrow?'.tr)
           ],
         ),
       ),

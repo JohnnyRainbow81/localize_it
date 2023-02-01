@@ -8,7 +8,7 @@ class LocaleConfiguration {
   /// on [DeepL](https://www.deepl.com/de/docs-api/translate-text/translate-text/).
   ///
   /// Defaults to: 'de' (German)
-  static const String baseLanguageCode = 'de';
+  static const String baseLanguageCode = 'en';
 
   /// Expects language codes in **lowercase**.
   /// Should *not* contain `baseLanguageCode`.
@@ -18,7 +18,7 @@ class LocaleConfiguration {
   ///
   /// Defaults to: `['en' (English), 'es' (Spanish)]`
   static const List<String> supportedLanguageCodes = [
-    'en',
+    'de',
     'es',
   ];
 
@@ -37,4 +37,12 @@ class LocaleConfiguration {
   /// However if you prefer using double quotes in your project you can do this by settings
   /// `preferDoubleQuotes` to  `true`.
   static const bool preferDoubleQuotes = false;
+
+  /// Choose between:
+  /// default (default)
+  /// more - for a more formal language
+  /// less - for a more informal language
+  /// prefer_more - for a more formal language if available, otherwise fallback to default formality
+  /// prefer_less - for a more informal language if available, otherwise fallback to default formality
+  static const String formality = 'less';
 }
