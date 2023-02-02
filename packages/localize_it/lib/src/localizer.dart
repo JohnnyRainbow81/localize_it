@@ -135,19 +135,149 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   Future<void> translate() async {
-    final fileNamesWithTranslation = await _getFileNamesWithTranslations();
-    await _writeTranslationsToBaseFile(fileNamesWithTranslation);
+    final keysWithTranslation = await _getKeysWithTranslation(); // _getFileNamesWithTranslations();
+    await _writeKeyValuesToBaseFile2(keysWithTranslation);
 
     final allTranslations = <String>[];
 
-    for (final value in fileNamesWithTranslation.values) {
+    for (final value in keysWithTranslation.values) {
       allTranslations.addAll(value);
     }
 
-    await _writeTranslationsToAllTranslationFiles(
+    await _writeTranslationsToAllTranslationFiles2(
       allTranslations,
-      fileNamesWithTranslation,
+      keysWithTranslation,
     );
+  }
+
+  // by Stefan
+  Future<Map<String, dynamic>> _getKeysWithTranslation() async {
+    final currentDir = Directory.current;
+
+    final allStringsToTranslate = List<String>.empty(growable: true);
+    final keysWithTranslation = <String, dynamic>{};
+    try {
+      final files = await _getDirectorysContents(currentDir);
+      final dartFiles = _getDartFiles(files);
+
+      await Future.forEach(dartFiles, (File fileEntity) async {
+        final translationForSpecificFile = List<String>.empty(growable: true);
+
+        final fileContent = await _readFileContent(fileEntity.path);
+
+        // Regex might be faulty
+        final regex = /*  preferDoubleQuotes ? RegExp(r"""(.*?)""") : */ RegExp(r"('[^'\\]*(?:\\.[^'\\]*)*'\s*\.tr\b)");
+        final wordMatches = regex.allMatches(fileContent);
+
+        // tokenize string like 'Login.Message.sag hello'
+        for (final wordMatch in wordMatches) {
+          stdout.writeln("wordMatch: ${wordMatch.group(0)}");
+
+          final rawKeysAndValue = wordMatch.group(0)!;
+          String cleanedKeyAndValue = _cleanKeyAndValue(rawKeysAndValue);
+
+          stdout.writeln("cleanedKeyAndValue: $cleanedKeyAndValue");
+
+          List<String> keys = cleanedKeyAndValue.split('.');
+
+          stdout.writeln("Keys: $keys");
+          // Works until here
+
+          keysWithTranslation.addAll(recursivelyAddKeyValues(keys, {}));
+
+          stdout.writeln("keysWithTranslation: $keysWithTranslation");
+
+          final word = keys.last;
+
+          if (!allStringsToTranslate.contains(word)) {
+            allStringsToTranslate.add(word);
+            translationForSpecificFile.add(word);
+          }
+        }
+        stdout.writeln("All of the parsed string: $allStringsToTranslate");
+
+        // // FIXME PUT KEYS IN MAP SOMEHOW
+        // if (translationForSpecificFile.isNotEmpty) {
+        //   final fileName = _basePath(fileEntity);
+        //   keysWithTranslation[fileName] = translationForSpecificFile;
+        // }
+      });
+
+      stdout.writeln('✅    Done!\n\n');
+      return keysWithTranslation;
+    } catch (exception) {
+      stdout.writeln('❌    Something went wrong while localizing. \n');
+      stdout.writeln('      Error: $exception\n\n');
+      return keysWithTranslation;
+    }
+  }
+
+  Map<String, dynamic> recursivelyAddKeyValues(List<String> keys, Map<String, dynamic> allKeysAndValues) {
+    if (keys.length > 2) {
+      allKeysAndValues.putIfAbsent(keys[0], () => MapEntry(keys[1], null));
+      keys.removeAt(0);
+      return recursivelyAddKeyValues(keys, allKeysAndValues);
+    } else if (keys.length == 2) {
+      allKeysAndValues.putIfAbsent(keys[0], () => keys[1]);
+      return allKeysAndValues;
+    } else if (keys.length == 1) {
+      allKeysAndValues.putIfAbsent(keys[0], () => keys[0]);
+      return allKeysAndValues;
+    }
+    return allKeysAndValues;
+  }
+
+  String _cleanKeyAndValue(String input) {
+    stdout.writeln("input to clean: $input");
+    var cleanedString = "";
+    if (input.endsWith(".tr")) {
+      cleanedString = input.substring(0, input.length - 3);
+      stdout.writeln("cleanedString 1: $cleanedString");
+    }
+    if ((cleanedString[0] == '"' || cleanedString[0] == "'") &&
+        (cleanedString[cleanedString.length - 1] == '"' || cleanedString[cleanedString.length - 1] == "'")) {
+      cleanedString = cleanedString.substring(1, cleanedString.length - 1);
+      stdout.writeln("cleanedString 2: $cleanedString");
+    }
+    return cleanedString;
+  }
+
+  // by Stefan
+  Future<void> _writeKeyValuesToBaseFile2(
+    Map<String, dynamic> fileNamesWithTranslation,
+  ) async {
+    stdout.writeln('Updating base localization file with keys / values...\n');
+
+    await _writeTranslationsToFile2(
+      // creates the base language file, like en.g.dart
+      await _getBaseFile(),
+      fileNamesWithTranslation,
+      language: baseLanguageCode,
+      writeKeyAndValue: (translation, sink) {
+        sink.write('\t$translation: $translation');
+      },
+    );
+
+    stdout.writeln('✅    Done!\n\n');
+  }
+
+  // by Stefan
+  Future<void> _writeTranslationsToFile2(
+    File file,
+    Map<String, dynamic> keysWithTranslation, {
+    required void Function(String, IOSink) writeKeyAndValue,
+    required String language,
+  }) async {
+    final sink = file.openWrite();
+
+    sink.writeln(asJsonFile ? '{ \n\t "$language" : {' : 'const Map<String, String> $language = {');
+
+    //FIXME IMPLEMENT!
+
+    sink.writeln(asJsonFile ? '}\n }' : '};');
+
+    await sink.flush();
+    await sink.close();
   }
 
   /// Searching for all Strings in the project that use the `.tr` extension.
@@ -360,9 +490,127 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     stdout.writeln('\n🍻🍻🍻 Successfully updated localizations! 🍻🍻🍻\n\n\n');
   }
 
+  Future<void> _writeTranslationsToAllTranslationFiles2(
+    List<String> allTranslations,
+    Map<String, dynamic> keysWithTranslation,
+  ) async {
+    final localizationFiles = await _getLocalizationFiles();
+
+    await Future.forEach(localizationFiles, (File file) async {
+      await _updateTranslations2(
+        file,
+        allTranslations,
+        keysWithTranslation,
+      );
+    });
+
+    stdout.writeln('\n🍻🍻🍻 Successfully updated localizations! 🍻🍻🍻\n\n\n');
+  }
+
+  /// by Stefan
+  Future<void> _updateTranslations2(
+    FileSystemEntity fileEntity,
+    List<String> allTranslations,
+    Map<String, dynamic> fileNamesWithTranslation,
+  ) async {
+    // Reset counter for each file
+    successfullyLocalizedCounter = 0;
+    missingLocalizationsCounter = 0;
+
+    stdout.writeln('Update localizations in ${_basePath(fileEntity)} ...\n');
+    stdout.writeln('fileNamesWithTranslation: $fileNamesWithTranslation');
+
+    final fileContent = await _readFileContent(fileEntity.path);
+
+    Map<String, String> oldTranslations = {};
+
+    // Gets called when translation files were already initiated
+    if (fileContent.isNotEmpty) {
+      final matchComments = RegExp(r'\/\/.*\n?');
+
+      // Remove Comments
+      var keysAndValues = fileContent.replaceAll(matchComments, '');
+      stdout.writeln("keysAndValues before Json-manipulation: \n $keysAndValues");
+
+      if (asJsonFile) {
+        keysAndValues = _jsonToRawKeysAndValues(keysAndValues);
+      } else {
+        // Remove first line
+        keysAndValues = keysAndValues.split('= {')[1].trim();
+        // Remove last closing curly bracket
+        keysAndValues.substring(0, keysAndValues.length - 1);
+      }
+
+      final splittedKeysAndValues = keysAndValues.split(',\n');
+
+      for (final keyAndValue in splittedKeysAndValues) {
+        // Last element is empty so this check is neccessary
+        if (keyAndValue.contains('$escapedQuote:')) {
+          final keyAndValueSeperated = keyAndValue.split(escapedQuote);
+          // Add single quote for key since it was removed when splitting it
+          oldTranslations['${keyAndValueSeperated[0].trim()}$escapedQuote'] = keyAndValueSeperated[1].trim();
+        }
+      }
+    }
+
+    // Remove translations from file that are no longer in the project
+    for (final key in [...oldTranslations.keys]) {
+      if (!allTranslations.contains(key)) {
+        oldTranslations.remove(key);
+      }
+    }
+
+    final file = File(fileEntity.path);
+    final language = _getLanguage(file);
+
+    await _writeTranslationsToFile2(
+      file,
+      fileNamesWithTranslation,
+      language: language,
+      writeKeyAndValue: (oldTranslationKey, sink) async {
+        stdout.writeln("_writeTranslationsToFile with oldTranslationKey");
+
+        final entryExistsForTranslation = oldTranslations.containsKey(oldTranslationKey);
+
+        final entryExistsButIsEmpty = entryExistsForTranslation && (oldTranslations[oldTranslationKey] ?? '').isEmpty;
+
+        final entryExistsButIsMissingTranslation =
+            oldTranslations[oldTranslationKey] == missingTranslationPlaceholderText;
+
+        final isMissing = !entryExistsForTranslation || entryExistsButIsEmpty || entryExistsButIsMissingTranslation;
+
+        if (isMissing && !useDeepL) {
+          missingLocalizationsCounter++;
+        }
+
+        var value = isMissing
+            ? useDeepL
+                ? await _deepLTranslate(
+                    _removeFirstAndLastCharacter(
+                      oldTranslationKey,
+                    ),
+                    language,
+                  )
+                : missingTranslationPlaceholderText
+            : oldTranslations[oldTranslationKey] ?? '';
+
+        sink.writeln("\t$oldTranslationKey: $value");
+      },
+    );
+    stdout.writeln(
+      '💡    Missing Localizations: $missingLocalizationsCounter',
+    );
+    if (useDeepL) {
+      stdout.writeln(
+        '💡    New Localizations:     $successfullyLocalizedCounter\n',
+      );
+    }
+    stdout.writeln('✅    Done!\n\n');
+  }
+
   /// Updates each translation file and keeps track of all
   /// missing translations, or updates missing translations with the DeepL API
-  /// 
+  ///
   Future<void> _updateTranslations(
     FileSystemEntity fileEntity,
     List<String> allTranslations,
