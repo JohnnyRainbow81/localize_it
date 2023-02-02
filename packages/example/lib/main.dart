@@ -32,7 +32,7 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         backgroundColor: Colors.green[600],
         title: Text(
-          'Profile'.tr,
+          'Profile.Profile'.tr,
           style: TextStyle(
               fontSize: 44,
               color: Colors.green[100],
@@ -56,8 +56,8 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(
               height: 50,
             ),
-            Text("I'm Chris.".tr),
-            Text("How are you? I'm fine".tr),
+            Text("Auth.Login.I'm Chris.".tr),
+            Text("Main.How are you? I'm fine".tr),
             Text('Would this be a problem for you to be punctual tomorrow?'.tr)
           ],
         ),
@@ -67,5 +67,5 @@ class _ProfilePageState extends State<ProfilePage> {
 }
 
 extension StringExtension on String {
-  String get tr => '';
+  String get tr => '';  
 }

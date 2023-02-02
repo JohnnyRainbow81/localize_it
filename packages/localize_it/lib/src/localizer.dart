@@ -362,7 +362,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
   /// Updates each translation file and keeps track of all
   /// missing translations, or updates missing translations with the DeepL API
-  In dieser Funktion weitermachen! 
+  /// 
   Future<void> _updateTranslations(
     FileSystemEntity fileEntity,
     List<String> allTranslations,
@@ -449,7 +449,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
                 : missingTranslationPlaceholderText
             : oldTranslations[oldTranslationKey] ?? '';
 
-        sink.writeln("\t$oldTranslationKey: $value,");
+        sink.writeln("\t$oldTranslationKey: $value");
       },
     );
     stdout.writeln(

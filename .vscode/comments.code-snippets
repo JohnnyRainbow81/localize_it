@@ -1,0 +1,124 @@
+{
+	// Place your snippets for typescript here. Each snippet is defined under a snippet name and has a prefix, body and 
+	// description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. Placeholders with the 
+	// same ids are connected.
+	// Example:
+	"Comment Constructor": {
+		"prefix": "comment-constructor",
+		"body": [
+			"// -----------------------------------------------------------------------------------------------------",
+			"// @ CONSTRUCTOR",
+			"// -----------------------------------------------------------------------------------------------------"
+		],
+		"description": "Create constructor comment block"
+	},
+	"Comment Output Variables": {
+		"prefix": "comment-output-variables",
+		"body": [
+			"// -----------------------------------------------------------------------------------------------------",
+			"// @ OUTPUT VARIABLES",
+			"// -----------------------------------------------------------------------------------------------------"
+		],
+		"description": "Create output variables comment block"
+	},
+	"Comment Input Variables": {
+		"prefix": "comment-input-variables",
+		"body": [
+			"// -----------------------------------------------------------------------------------------------------",
+			"// @ INPUT VARIABLES",
+			"// -----------------------------------------------------------------------------------------------------"
+		],
+		"description": "Create input variables comment block"
+	},
+	"Comment Life Cycle Hooks": {
+		"prefix": "comment-life-cycle-hooks",
+		"body": [
+			"// -----------------------------------------------------------------------------------------------------",
+			"// @ LIFE CYCLE HOOKS",
+			"// -----------------------------------------------------------------------------------------------------"
+		],
+		"description": "Create life cycle hooks comment block"
+	},
+	"Comment Public Instance Variables": {
+		"prefix": "comment-public-instance-variables",
+		"body": [
+			"// -----------------------------------------------------------------------------------------------------",
+			"// @ PUBLIC INSTANCE VARIABLES",
+			"// -----------------------------------------------------------------------------------------------------"
+		],
+		"description": "Create public instance variables comment block"
+	},
+	"Comment Private Instance Variables": {
+		"prefix": "comment-private-instance-variables",
+		"body": [
+			"// -----------------------------------------------------------------------------------------------------",
+			"// @ PRIVATE INSTANCE VARIABLES",
+			"// -----------------------------------------------------------------------------------------------------"
+		],
+		"description": "Create private instance variables comment block"
+	},
+	"Comment View Children": {
+		"prefix": "comment-view-children",
+		"body": [
+			"// -----------------------------------------------------------------------------------------------------",
+			"// @ VIEW CHILD/CHILDREN VARIABLES",
+			"// -----------------------------------------------------------------------------------------------------"
+		],
+		"description": "Create view child/children variables comment block"
+	},
+	"Comment Public Methods": {
+		"prefix": "comment-public-methods",
+		"body": [
+			"// -----------------------------------------------------------------------------------------------------",
+			"// @ PUBLIC METHODS",
+			"// -----------------------------------------------------------------------------------------------------"
+		],
+		"description": "Create public methods comment block"
+	},
+	"Comment Interfaces": {
+		"prefix": "comment-interfaces",
+		"body": [
+			"// -----------------------------------------------------------------------------------------------------",
+			"// @ INTERFACES",
+			"// -----------------------------------------------------------------------------------------------------"
+		],
+		"description": "Create interfaces comment block"
+	},
+	"Comment Overrides": {
+		"prefix": "comment-overrides",
+		"body": [
+			"// -----------------------------------------------------------------------------------------------------",
+			"// @ OVERRIDES",
+			"// -----------------------------------------------------------------------------------------------------"
+		],
+		"description": "Create overrides comment block"
+	},
+	"Comment protected methods": {
+		"prefix": "comment-protected-methods",
+		"body": [
+			"// -----------------------------------------------------------------------------------------------------",
+			"// @ PROTECTED METHODS",
+			"// -----------------------------------------------------------------------------------------------------"
+		],
+		"description": "Create protected methods comment block"
+	},
+	"Comment private methods": {
+		"prefix": "comment-private-methods",
+		"body": [
+			"// -----------------------------------------------------------------------------------------------------",
+			"// @ PRIVATE METHODS",
+			"// -----------------------------------------------------------------------------------------------------"
+		],
+		"description": "Create private methods comment block"
+	},
+	"Comment Block": {
+		"prefix": "comment",
+		"body": [
+			"// -----------------------------------------------------------------------------------------------------",
+			"// @ ${0:BLOCK}",
+			"// -----------------------------------------------------------------------------------------------------"
+		],
+		"description": "Create comment block"
+	}
+}
