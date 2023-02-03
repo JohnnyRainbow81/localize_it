@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
+import 'dart:convert';
 import 'package:build/build.dart';
 import 'package:http/http.dart' as http;
 
@@ -138,7 +138,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     final keysWithTranslation = await _getKeysWithTranslation(); // _getFileNamesWithTranslations();
     await _writeKeyValuesToBaseFile2(keysWithTranslation);
 
-    final allTranslations = <String>[];
+    final allTranslations = <String, dynamic>{};
 
     for (final value in keysWithTranslation.values) {
       allTranslations.addAll(value);
@@ -153,12 +153,14 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   // by Stefan
   Future<Map<String, dynamic>> _getKeysWithTranslation() async {
     final currentDir = Directory.current;
+    Map<String, dynamic> keysWithTranslation = {};
 
     final allStringsToTranslate = List<String>.empty(growable: true);
-    final keysWithTranslation = <String, dynamic>{};
+
     try {
       final files = await _getDirectorysContents(currentDir);
       final dartFiles = _getDartFiles(files);
+      final List<String> keysAndValueStrings = [];
 
       await Future.forEach(dartFiles, (File fileEntity) async {
         final translationForSpecificFile = List<String>.empty(growable: true);
@@ -166,26 +168,19 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         final fileContent = await _readFileContent(fileEntity.path);
 
         // Regex might be faulty
-        final regex = /*  preferDoubleQuotes ? RegExp(r"""(.*?)""") : */ RegExp(r"('[^'\\]*(?:\\.[^'\\]*)*'\s*\.tr\b)");
+        final regex = /*  preferDoubleQuotes ? RegExp(r"""(.*?)""") : */ RegExp(r"'[^']*(\\'[^']*)*'\.tr");
         final wordMatches = regex.allMatches(fileContent);
 
         // tokenize string like 'Login.Message.sag hello'
         for (final wordMatch in wordMatches) {
-          stdout.writeln("wordMatch: ${wordMatch.group(0)}");
-
           final rawKeysAndValue = wordMatch.group(0)!;
           String cleanedKeyAndValue = _cleanKeyAndValue(rawKeysAndValue);
 
-          stdout.writeln("cleanedKeyAndValue: $cleanedKeyAndValue");
+          keysAndValueStrings.add(cleanedKeyAndValue);
 
+          // For DeepL later..
           List<String> keys = cleanedKeyAndValue.split('.');
-
-          stdout.writeln("Keys: $keys");
           // Works until here
-
-          keysWithTranslation.addAll(recursivelyAddKeyValues(keys, {}));
-
-          stdout.writeln("keysWithTranslation: $keysWithTranslation");
 
           final word = keys.last;
 
@@ -194,14 +189,10 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
             translationForSpecificFile.add(word);
           }
         }
-        stdout.writeln("All of the parsed string: $allStringsToTranslate");
-
-        // // FIXME PUT KEYS IN MAP SOMEHOW
-        // if (translationForSpecificFile.isNotEmpty) {
-        //   final fileName = _basePath(fileEntity);
-        //   keysWithTranslation[fileName] = translationForSpecificFile;
-        // }
       });
+      keysWithTranslation = toNestedMap(keysAndValueStrings, {});
+
+      stdout.writeln("keysWithTranslation: $keysWithTranslation");
 
       stdout.writeln('✅    Done!\n\n');
       return keysWithTranslation;
@@ -212,46 +203,71 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     }
   }
 
-  Map<String, dynamic> recursivelyAddKeyValues(List<String> keys, Map<String, dynamic> allKeysAndValues) {
-    if (keys.length > 2) {
-      allKeysAndValues.putIfAbsent(keys[0], () => MapEntry(keys[1], null));
-      keys.removeAt(0);
-      return recursivelyAddKeyValues(keys, allKeysAndValues);
-    } else if (keys.length == 2) {
-      allKeysAndValues.putIfAbsent(keys[0], () => keys[1]);
-      return allKeysAndValues;
-    } else if (keys.length == 1) {
-      allKeysAndValues.putIfAbsent(keys[0], () => keys[0]);
-      return allKeysAndValues;
+  Map<String, dynamic> toNestedMap(List<String> stringList, Map<String, dynamic> finalMap) {
+    // list = "Auth.Login.This is my leaf", "Auth.Login.This is my second lef"
+
+    RegExp regExp = RegExp(r"(?<!\\)\."); // Only use "." as delimiter, not "\."
+    for (String string in stringList) {
+      // final matches = regExp.allMatches(string).map((e) => e.group(0)!);
+      // final segments = List.from(matches);
+
+      final segments = string.split(regExp);
+
+      // LEAF
+      final leafIndex = segments.length - 1;
+
+      var currentRootNode = finalMap;
+
+      // HANDLE GROUPS
+      for (int i = 0; i < segments.length; i++) {
+        final segment = segments[i];
+
+        if (finalMap.containsKey(segment)) {
+          // NODE exists
+          if (i == leafIndex) {
+            currentRootNode.addEntries([MapEntry(segment, segment)]);
+          } else {
+            final deeperNode = <String, dynamic>{};
+            currentRootNode.addEntries([MapEntry(segment, deeperNode)]);
+            currentRootNode = deeperNode;
+          }
+        } else {
+          // NODE doesn't yet exist
+          if (i == leafIndex) {
+            currentRootNode.addEntries([MapEntry(segment, segment)]);
+          } else {
+            final deeperNode = <String, dynamic>{};
+            currentRootNode.addEntries([MapEntry(segment, deeperNode)]);
+            currentRootNode = deeperNode;
+          }
+        }
+      }
     }
-    return allKeysAndValues;
+    return finalMap;
   }
 
   String _cleanKeyAndValue(String input) {
-    stdout.writeln("input to clean: $input");
     var cleanedString = "";
     if (input.endsWith(".tr")) {
       cleanedString = input.substring(0, input.length - 3);
-      stdout.writeln("cleanedString 1: $cleanedString");
     }
     if ((cleanedString[0] == '"' || cleanedString[0] == "'") &&
         (cleanedString[cleanedString.length - 1] == '"' || cleanedString[cleanedString.length - 1] == "'")) {
       cleanedString = cleanedString.substring(1, cleanedString.length - 1);
-      stdout.writeln("cleanedString 2: $cleanedString");
     }
     return cleanedString;
   }
 
   // by Stefan
   Future<void> _writeKeyValuesToBaseFile2(
-    Map<String, dynamic> fileNamesWithTranslation,
+    Map<String, dynamic> keysWithTranslation,
   ) async {
     stdout.writeln('Updating base localization file with keys / values...\n');
 
     await _writeTranslationsToFile2(
       // creates the base language file, like en.g.dart
       await _getBaseFile(),
-      fileNamesWithTranslation,
+      keysWithTranslation,
       language: baseLanguageCode,
       writeKeyAndValue: (translation, sink) {
         sink.write('\t$translation: $translation');
@@ -270,11 +286,9 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }) async {
     final sink = file.openWrite();
 
-    sink.writeln(asJsonFile ? '{ \n\t "$language" : {' : 'const Map<String, String> $language = {');
-
-    //FIXME IMPLEMENT!
-
-    sink.writeln(asJsonFile ? '}\n }' : '};');
+    // Write JSON
+    sink.write(jsonEncode(keysWithTranslation));
+    // sink.writeln(asJsonFile ? '{ \n\t "$language" : {' : 'const Map<String, String> $language = {');
 
     await sink.flush();
     await sink.close();
@@ -491,7 +505,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   Future<void> _writeTranslationsToAllTranslationFiles2(
-    List<String> allTranslations,
+    Map<String, dynamic> allTranslations,
     Map<String, dynamic> keysWithTranslation,
   ) async {
     final localizationFiles = await _getLocalizationFiles();
@@ -510,7 +524,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   /// by Stefan
   Future<void> _updateTranslations2(
     FileSystemEntity fileEntity,
-    List<String> allTranslations,
+    Map<String, dynamic> allTranslations,
     Map<String, dynamic> fileNamesWithTranslation,
   ) async {
     // Reset counter for each file
@@ -555,7 +569,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
     // Remove translations from file that are no longer in the project
     for (final key in [...oldTranslations.keys]) {
-      if (!allTranslations.contains(key)) {
+      if (!allTranslations.entries.contains(key)) {
         oldTranslations.remove(key);
       }
     }
