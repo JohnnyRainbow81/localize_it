@@ -136,6 +136,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
   Future<void> translate() async {
     final keysWithTranslation = await _getKeysWithTranslation(); // _getFileNamesWithTranslations();
+    // generate en.g.json
     await _writeKeyValuesToBaseFile2(keysWithTranslation);
 
     final allTranslations = <String, dynamic>{};
@@ -190,7 +191,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
           }
         }
       });
-      keysWithTranslation = toNestedMap(keysAndValueStrings, {});
+      keysWithTranslation = toNestedMap(keysAndValueStrings);
 
       stdout.writeln("keysWithTranslation: $keysWithTranslation");
 
@@ -203,14 +204,14 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     }
   }
 
-  Map<String, dynamic> toNestedMap(List<String> stringList, Map<String, dynamic> finalMap) {
+  Map<String, dynamic> toNestedMap(List<String> stringList) {
     // list = "Auth.Login.This is my leaf", "Auth.Login.This is my second lef"
 
     RegExp regExp = RegExp(r"(?<!\\)\."); // Only use "." as delimiter, not "\."
-    for (String string in stringList) {
-      // final matches = regExp.allMatches(string).map((e) => e.group(0)!);
-      // final segments = List.from(matches);
 
+    Map<String, dynamic> finalMap = {};
+
+    for (String string in stringList) {
       final segments = string.split(regExp);
 
       // LEAF
@@ -222,14 +223,12 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
       for (int i = 0; i < segments.length; i++) {
         final segment = segments[i];
 
-        if (finalMap.containsKey(segment)) {
+        if (currentRootNode.containsKey(segment)) {
           // NODE exists
           if (i == leafIndex) {
             currentRootNode.addEntries([MapEntry(segment, segment)]);
           } else {
-            final deeperNode = <String, dynamic>{};
-            currentRootNode.addEntries([MapEntry(segment, deeperNode)]);
-            currentRootNode = deeperNode;
+            currentRootNode = currentRootNode[segment];
           }
         } else {
           // NODE doesn't yet exist
@@ -288,7 +287,6 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
     // Write JSON
     sink.write(jsonEncode(keysWithTranslation));
-    // sink.writeln(asJsonFile ? '{ \n\t "$language" : {' : 'const Map<String, String> $language = {');
 
     await sink.flush();
     await sink.close();

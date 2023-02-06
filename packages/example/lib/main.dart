@@ -39,9 +39,9 @@ class _ProfilePageState extends State<ProfilePage> {
               fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-      ),
+      ),  
       body: Center(
-        child: Column(
+        child: Column(  
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
@@ -58,7 +58,10 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             Text('Auth.Login.I\'m Chris\.'.tr),
             Text('Main.How are you? I\'m fine'.tr),
-            Text('Would this be a problem for you to be punctual tomorrow?'.tr)
+            Text('Would this be a problem for you to be punctual tomorrow?'.tr),
+            Text('Auth.This should work'.tr),
+            Text('Auth.Login.Here is another line'.tr),
+            Text('Auth.AnotherKey.Check this out'.tr)
           ],
         ),
       ),
