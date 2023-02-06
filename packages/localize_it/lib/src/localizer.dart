@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:convert';
+import 'dart:math';
 import 'package:build/build.dart';
 import 'package:http/http.dart' as http;
 
@@ -139,14 +140,14 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     // generate en.g.json
     await _writeKeyValuesToBaseFile2(keysWithTranslation);
 
-    final allTranslations = <String, dynamic>{};
+    // final allTranslations = <String, dynamic>{};
 
-    for (final value in keysWithTranslation.values) {
-      allTranslations.addAll(value);
-    }
+    // for (final value in keysWithTranslation.values) {
+    //   allTranslations.addAll(value);
+    // }
 
     await _writeTranslationsToAllTranslationFiles2(
-      allTranslations,
+      // allTranslations,
       keysWithTranslation,
     );
   }
@@ -266,10 +267,10 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     await _writeTranslationsToFile2(
       // creates the base language file, like en.g.dart
       await _getBaseFile(),
-      keysWithTranslation,
+      jsonEncode(keysWithTranslation),
       language: baseLanguageCode,
       writeKeyAndValue: (translation, sink) {
-        sink.write('\t$translation: $translation');
+        sink.write(translation);
       },
     );
 
@@ -279,17 +280,25 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   // by Stefan
   Future<void> _writeTranslationsToFile2(
     File file,
-    Map<String, dynamic> keysWithTranslation, {
+    String keysWithTranslation, {
     required void Function(String, IOSink) writeKeyAndValue,
     required String language,
   }) async {
     final sink = file.openWrite();
 
     // Write JSON
-    sink.write(jsonEncode(keysWithTranslation));
+    //sink.write(jsonEncode(keysWithTranslation));
+    try {
+      writeKeyAndValue(keysWithTranslation, sink);
 
-    await sink.flush();
-    await sink.close();
+      await sink.flush();
+      
+    } catch (e) {
+      stdout.writeln("Error writing translations");
+      stderr.writeln(e);
+    } finally {
+      await sink.close();
+    }
   }
 
   /// Searching for all Strings in the project that use the `.tr` extension.
@@ -503,7 +512,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   Future<void> _writeTranslationsToAllTranslationFiles2(
-    Map<String, dynamic> allTranslations,
+    //Map<String, dynamic> allTranslations,
     Map<String, dynamic> keysWithTranslation,
   ) async {
     final localizationFiles = await _getLocalizationFiles();
@@ -511,7 +520,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     await Future.forEach(localizationFiles, (File file) async {
       await _updateTranslations2(
         file,
-        allTranslations,
+        // allTranslations,
         keysWithTranslation,
       );
     });
@@ -522,7 +531,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   /// by Stefan
   Future<void> _updateTranslations2(
     FileSystemEntity fileEntity,
-    Map<String, dynamic> allTranslations,
+    // Map<String, dynamic> allTranslations,
     Map<String, dynamic> fileNamesWithTranslation,
   ) async {
     // Reset counter for each file
@@ -532,79 +541,25 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     stdout.writeln('Update localizations in ${_basePath(fileEntity)} ...\n');
     stdout.writeln('fileNamesWithTranslation: $fileNamesWithTranslation');
 
+    // get current state of tranlation for de, es, fr, ...
     final fileContent = await _readFileContent(fileEntity.path);
-
-    Map<String, String> oldTranslations = {};
-
-    // Gets called when translation files were already initiated
-    if (fileContent.isNotEmpty) {
-      final matchComments = RegExp(r'\/\/.*\n?');
-
-      // Remove Comments
-      var keysAndValues = fileContent.replaceAll(matchComments, '');
-      stdout.writeln("keysAndValues before Json-manipulation: \n $keysAndValues");
-
-      if (asJsonFile) {
-        keysAndValues = _jsonToRawKeysAndValues(keysAndValues);
-      } else {
-        // Remove first line
-        keysAndValues = keysAndValues.split('= {')[1].trim();
-        // Remove last closing curly bracket
-        keysAndValues.substring(0, keysAndValues.length - 1);
-      }
-
-      final splittedKeysAndValues = keysAndValues.split(',\n');
-
-      for (final keyAndValue in splittedKeysAndValues) {
-        // Last element is empty so this check is neccessary
-        if (keyAndValue.contains('$escapedQuote:')) {
-          final keyAndValueSeperated = keyAndValue.split(escapedQuote);
-          // Add single quote for key since it was removed when splitting it
-          oldTranslations['${keyAndValueSeperated[0].trim()}$escapedQuote'] = keyAndValueSeperated[1].trim();
-        }
-      }
-    }
-
-    // Remove translations from file that are no longer in the project
-    for (final key in [...oldTranslations.keys]) {
-      if (!allTranslations.entries.contains(key)) {
-        oldTranslations.remove(key);
-      }
-    }
 
     final file = File(fileEntity.path);
     final language = _getLanguage(file);
 
     await _writeTranslationsToFile2(
       file,
-      fileNamesWithTranslation,
+      jsonEncode(fileNamesWithTranslation), // Hier String statt Map rein??
       language: language,
       writeKeyAndValue: (oldTranslationKey, sink) async {
-        stdout.writeln("_writeTranslationsToFile with oldTranslationKey");
-
-        final entryExistsForTranslation = oldTranslations.containsKey(oldTranslationKey);
-
-        final entryExistsButIsEmpty = entryExistsForTranslation && (oldTranslations[oldTranslationKey] ?? '').isEmpty;
-
-        final entryExistsButIsMissingTranslation =
-            oldTranslations[oldTranslationKey] == missingTranslationPlaceholderText;
-
-        final isMissing = !entryExistsForTranslation || entryExistsButIsEmpty || entryExistsButIsMissingTranslation;
-
-        if (isMissing && !useDeepL) {
-          missingLocalizationsCounter++;
-        }
-
-        var value = isMissing
-            ? useDeepL
-                ? await _deepLTranslate(
-                    _removeFirstAndLastCharacter(
-                      oldTranslationKey,
-                    ),
-                    language,
-                  )
-                : missingTranslationPlaceholderText
-            : oldTranslations[oldTranslationKey] ?? '';
+        var value = useDeepL
+            ? await _deepLTranslate(
+                _removeFirstAndLastCharacter(
+                  oldTranslationKey,
+                ),
+                language,
+              )
+            : "<<Could not translate value>>";
 
         sink.writeln("\t$oldTranslationKey: $value");
       },

@@ -26,7 +26,7 @@ class LocaleConfiguration {
   /// via the [DeepL API](https://www.deepl.com/de/pro-api?cta=header-pro-api/).
   /// If no key is provided (empty String), all *marked Strings* (end with `.tr`) in your project
   /// will get translated to `'--missing translation--'.`
-  static const String deepLAuthKey = '';
+  static const String deepLAuthKey = 'b5d442c3-cada-45a5-5686-a7ba7a6cae30:fx';
 
   /// Enabling `useGetX` generates `Map<String, Map<String,String>> translationKeys` which can
   /// simply be passed to `GetMaterialApp`.
