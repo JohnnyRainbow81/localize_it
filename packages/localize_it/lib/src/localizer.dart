@@ -136,28 +136,25 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   Future<void> translate() async {
-    final keysWithTranslation = await _getKeysWithTranslation(); // _getFileNamesWithTranslations();
+    final nestedKeysWithTranslations =
+        await _parseDartFilesAndGenerateKeyValueMap(); // _getFileNamesWithTranslations();
     // generate en.g.json
-    await _writeKeyValuesToBaseFile2(keysWithTranslation);
+    await _writeToFile(
+      await _getBaseFile(),
+      nestedKeysWithTranslations,
+      language: baseLanguageCode,
+    );
 
-    // final allTranslations = <String, dynamic>{};
-
-    // for (final value in keysWithTranslation.values) {
-    //   allTranslations.addAll(value);
-    // }
-
-    await _writeTranslationsToAllTranslationFiles2(
+    await _translateToAllLanguages(
       // allTranslations,
-      keysWithTranslation,
+      nestedKeysWithTranslations,
     );
   }
 
   // by Stefan
-  Future<Map<String, dynamic>> _getKeysWithTranslation() async {
+  Future<Map<String, dynamic>> _parseDartFilesAndGenerateKeyValueMap() async {
     final currentDir = Directory.current;
     Map<String, dynamic> keysWithTranslation = {};
-
-    final allStringsToTranslate = List<String>.empty(growable: true);
 
     try {
       final files = await _getDirectorysContents(currentDir);
@@ -169,8 +166,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
         final fileContent = await _readFileContent(fileEntity.path);
 
-        // Regex might be faulty
-        final regex = /*  preferDoubleQuotes ? RegExp(r"""(.*?)""") : */ RegExp(r"'[^']*(\\'[^']*)*'\.tr");
+        final regex = RegExp(r"'[^']*(\\'[^']*)*'\.tr");
         final wordMatches = regex.allMatches(fileContent);
 
         // tokenize string like 'Login.Message.sag hello'
@@ -179,17 +175,6 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
           String cleanedKeyAndValue = _cleanKeyAndValue(rawKeysAndValue);
 
           keysAndValueStrings.add(cleanedKeyAndValue);
-
-          // For DeepL later..
-          List<String> keys = cleanedKeyAndValue.split('.');
-          // Works until here
-
-          final word = keys.last;
-
-          if (!allStringsToTranslate.contains(word)) {
-            allStringsToTranslate.add(word);
-            translationForSpecificFile.add(word);
-          }
         }
       });
       keysWithTranslation = toNestedMap(keysAndValueStrings);
@@ -259,40 +244,17 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   // by Stefan
-  Future<void> _writeKeyValuesToBaseFile2(
-    Map<String, dynamic> keysWithTranslation,
-  ) async {
-    stdout.writeln('Updating base localization file with keys / values...\n');
-
-    await _writeTranslationsToFile2(
-      // creates the base language file, like en.g.dart
-      await _getBaseFile(),
-      jsonEncode(keysWithTranslation),
-      language: baseLanguageCode,
-      writeKeyAndValue: (translation, sink) {
-        sink.write(translation);
-      },
-    );
-
-    stdout.writeln('✅    Done!\n\n');
-  }
-
-  // by Stefan
-  Future<void> _writeTranslationsToFile2(
+  Future<void> _writeToFile(
     File file,
-    String keysWithTranslation, {
-    required void Function(String, IOSink) writeKeyAndValue,
+    Map<String, dynamic> keysWithTranslation, {
     required String language,
   }) async {
     final sink = file.openWrite();
 
-    // Write JSON
-    //sink.write(jsonEncode(keysWithTranslation));
     try {
-      writeKeyAndValue(keysWithTranslation, sink);
+      sink.write(jsonEncode(keysWithTranslation));
 
       await sink.flush();
-      
     } catch (e) {
       stdout.writeln("Error writing translations");
       stderr.writeln(e);
@@ -511,14 +473,14 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     stdout.writeln('\n🍻🍻🍻 Successfully updated localizations! 🍻🍻🍻\n\n\n');
   }
 
-  Future<void> _writeTranslationsToAllTranslationFiles2(
+  Future<void> _translateToAllLanguages(
     //Map<String, dynamic> allTranslations,
     Map<String, dynamic> keysWithTranslation,
   ) async {
     final localizationFiles = await _getLocalizationFiles();
 
     await Future.forEach(localizationFiles, (File file) async {
-      await _updateTranslations2(
+      await _updateTranslation(
         file,
         // allTranslations,
         keysWithTranslation,
@@ -529,17 +491,17 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   /// by Stefan
-  Future<void> _updateTranslations2(
+  Future<void> _updateTranslation(
     FileSystemEntity fileEntity,
     // Map<String, dynamic> allTranslations,
-    Map<String, dynamic> fileNamesWithTranslation,
+    Map<String, dynamic> toTranslateMap,
   ) async {
     // Reset counter for each file
     successfullyLocalizedCounter = 0;
     missingLocalizationsCounter = 0;
 
     stdout.writeln('Update localizations in ${_basePath(fileEntity)} ...\n');
-    stdout.writeln('fileNamesWithTranslation: $fileNamesWithTranslation');
+    stdout.writeln('fileNamesWithTranslation: $toTranslateMap');
 
     // get current state of tranlation for de, es, fr, ...
     final fileContent = await _readFileContent(fileEntity.path);
@@ -547,23 +509,32 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     final file = File(fileEntity.path);
     final language = _getLanguage(file);
 
-    await _writeTranslationsToFile2(
-      file,
-      jsonEncode(fileNamesWithTranslation), // Hier String statt Map rein??
-      language: language,
-      writeKeyAndValue: (oldTranslationKey, sink) async {
+    //Do this:
+
+    // Only send new keys to Deepl (compare with old file content)
+    toTranslateMap = await iterateMap(toTranslateMap, language);
+    /* writeKeyAndValue: (singleKeyToTranslate, sink) async {
         var value = useDeepL
+            // Stefan put String in here
             ? await _deepLTranslate(
                 _removeFirstAndLastCharacter(
-                  oldTranslationKey,
+                  singleKeyToTranslate,
                 ),
                 language,
               )
             : "<<Could not translate value>>";
 
-        sink.writeln("\t$oldTranslationKey: $value");
-      },
+        Map<String, dynamic> translations = {};
+        // Add translated String to map
+        sink.writeln(jsonEncode(translations));
+      }, */
+
+    await _writeToFile(
+      file,
+      toTranslateMap,
+      language: language,
     );
+
     stdout.writeln(
       '💡    Missing Localizations: $missingLocalizationsCounter',
     );
@@ -573,6 +544,32 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
       );
     }
     stdout.writeln('✅    Done!\n\n');
+  }
+
+  Future<Map<String, dynamic>> iterateMap(Map<String, dynamic> toTranslate, String language) async {
+    Map<String, dynamic> currentNode = toTranslate;
+
+    for (int i = 0; i < toTranslate.entries.length; i++) {
+      var currentKey = currentNode.entries.elementAt(i).key;
+      var currentValue = currentNode.entries.elementAt(i).value;
+
+      if (currentValue is String) {
+        var translation = useDeepL
+            // Stefan put String in here
+            ? await _deepLTranslate(
+                _removeFirstAndLastCharacter(
+                  currentValue,
+                ),
+                language,
+              )
+            : "<<Could not translate value>>";
+        currentNode.update(currentNode.entries.elementAt(i).key, (value) => translation);
+      } else if (currentValue is Map) {
+        currentNode = currentNode[currentKey];
+        // iterateMap(currentNode, language);
+      }
+    }
+    return currentNode;
   }
 
   /// Updates each translation file and keeps track of all

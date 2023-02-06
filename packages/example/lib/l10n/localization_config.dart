@@ -8,7 +8,7 @@ class LocaleConfiguration {
   /// on [DeepL](https://www.deepl.com/de/docs-api/translate-text/translate-text/).
   ///
   /// Defaults to: 'de' (German)
-  static const String baseLanguageCode = 'de';
+  static const String baseLanguageCode = 'en';
 
   /// Expects language codes in **lowercase**.
   /// Should *not* contain `baseLanguageCode`.
@@ -18,7 +18,7 @@ class LocaleConfiguration {
   ///
   /// Defaults to: `['en' (English), 'es' (Spanish)]`
   static const List<String> supportedLanguageCodes = [
-    'en',
+    'de',
     'es',
   ];
 
@@ -36,7 +36,7 @@ class LocaleConfiguration {
   /// See [prefer_single_quotes](https://dart-lang.github.io/linter/lints/prefer_single_quotes.html) for more info.
   /// However if you prefer using double quotes in your project you can do this by settings
   /// `preferDoubleQuotes` to  `true`.
-  static const bool preferDoubleQuotes = true;
+  static const bool preferDoubleQuotes = false;
 
   /// How formal do you want DeepL\'s translations to be?');
   /// Choose between:');
