@@ -30,7 +30,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   int missingLocalizationsCounter = 0;
   int successfullyLocalizedCounter = 0;
 
-  late final String escapedQuote;
+  //late final String escapedQuote;
   late final missingTranslationPlaceholderText;
 
   @override
@@ -54,8 +54,8 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     asJsonFile = visitor.asJsonFile;
 
     // If we prefer double quotes OR want a JSON file, use double quotes, else use single quotes
-    escapedQuote = (preferDoubleQuotes || asJsonFile) ? '"' : '\'';
-    missingTranslationPlaceholderText = '$escapedQuote--missing translation--$escapedQuote';
+    //escapedQuote = (preferDoubleQuotes || asJsonFile) ? '"' : '\'';
+    missingTranslationPlaceholderText = '--missing translation--';
 
     final rawLocation = visitor.location;
 
@@ -409,7 +409,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         // Remove double escape characters
         text = text.replaceAll("\\\\'", "\\'");
 
-        return '$escapedQuote$text$escapedQuote';
+        return text;
       }
 
       missingLocalizationsCounter++;
