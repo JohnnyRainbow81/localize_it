@@ -19,13 +19,10 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
   late bool useDeepL;
   late String deepLAuthKey;
-  late bool useGetX;
-  late bool preferDoubleQuotes;
 
   late String baseFilePath;
   late String localizationFilePath;
   late String formality;
-  late bool asJsonFile;
 
   int missingLocalizationsCounter = 0;
   int successfullyLocalizedCounter = 0;
@@ -48,13 +45,8 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
     deepLAuthKey = visitor.deepLAuthKey;
     useDeepL = deepLAuthKey.isNotEmpty;
-    useGetX = visitor.useGetX;
-    preferDoubleQuotes = visitor.preferDoubleQuotes;
     formality = visitor.formality.isEmpty ? "default" : visitor.formality;
-    asJsonFile = visitor.asJsonFile;
 
-    // If we prefer double quotes OR want a JSON file, use double quotes, else use single quotes
-    escapedQuote = (preferDoubleQuotes || asJsonFile) ? '"' : '\'';
     missingTranslationPlaceholderText = '$escapedQuote--missing translation--$escapedQuote';
 
     final rawLocation = visitor.location;
@@ -257,7 +249,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   Future<List<File>> _getLocalizationFiles() async {
     final localizationFiles = <File>[];
     for (final code in supportedLanguageCodes) {
-      final file = asJsonFile ? File('$localizationFilePath/$code.g.json') : File('$localizationFilePath/$code.g.dart');
+      final file = File('$localizationFilePath/$code.g.json');
       if (!file.existsSync()) {
         await file.create();
       }
@@ -268,7 +260,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
   Future<File> _getBaseFile() async {
     final file =
-        asJsonFile ? File('$baseFilePath/$baseLanguageCode.g.json') : File('$baseFilePath/$baseLanguageCode.g.dart');
+         File('$baseFilePath/$baseLanguageCode.g.json');
     if (!file.existsSync()) {
       await file.create();
     }
