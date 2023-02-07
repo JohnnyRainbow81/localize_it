@@ -1,1 +1,20 @@
-{"Profile":"Profile"}
+{
+    "Profile": {
+        "Profile": "Profil"
+    },
+    "Choose your destiny": "Wähle dein Schicksal",
+    "Auth": {
+        "Login": {
+            "I\\'m Chris\\.": "Ich bin Chris.",
+            "Here is another line": "Hier ist eine weitere Zeile"
+        },
+        "This should work": "Das sollte funktionieren",
+        "AnotherKey": {
+            "Check this out": "Schau dir das an"
+        }
+    },
+    "Main": {
+        "How are you? I\\'m fine": "Wie geht es dir? Mir geht\\'s gut"
+    },
+    "Would this be a problem for you to be punctual tomorrow?": "Wäre das ein Problem für dich, morgen pünktlich zu sein?"
+}

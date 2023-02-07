@@ -240,6 +240,10 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         (cleanedString[cleanedString.length - 1] == '"' || cleanedString[cleanedString.length - 1] == "'")) {
       cleanedString = cleanedString.substring(1, cleanedString.length - 1);
     }
+    // if (cleanedString.contains(r"\")) {
+    //  cleanedString= cleanedString.replaceAll(r"\", "");
+    // }
+
     return cleanedString;
   }
 
@@ -342,7 +346,11 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   /// Reads, decodes and returns the content of a given [filePath]
   Future<String> _readFileContent(String filePath) async {
     final readStream = File(filePath).openRead();
-    return utf8.decodeStream(readStream);
+    String loadedString = await utf8.decodeStream(readStream);
+    if (loadedString.contains(r"\\")) {
+      loadedString = loadedString.replaceAll(r"\\", r"\");
+    }
+    return loadedString;
   }
 
   /// Removes the trailing `.tr` but more importantly removes whitespaces
@@ -509,25 +517,10 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     final file = File(fileEntity.path);
     final language = _getLanguage(file);
 
-    //Do this:
+    //TODO IMPLEMENT FUNCTION: Only send NEW, UNTRANSLATED keys to Deepl (compare with old file content)
+    //like: Map<String, dynamic> onlyNewKeyValues = compareMaps(oldMap, newMap)
 
-    // Only send new keys to Deepl (compare with old file content)
-    toTranslateMap = await iterateMap(toTranslateMap, language);
-    /* writeKeyAndValue: (singleKeyToTranslate, sink) async {
-        var value = useDeepL
-            // Stefan put String in here
-            ? await _deepLTranslate(
-                _removeFirstAndLastCharacter(
-                  singleKeyToTranslate,
-                ),
-                language,
-              )
-            : "<<Could not translate value>>";
-
-        Map<String, dynamic> translations = {};
-        // Add translated String to map
-        sink.writeln(jsonEncode(translations));
-      }, */
+    await translateMap(toTranslateMap, language);
 
     await _writeToFile(
       file,
@@ -546,30 +539,43 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     stdout.writeln('✅    Done!\n\n');
   }
 
-  Future<Map<String, dynamic>> iterateMap(Map<String, dynamic> toTranslate, String language) async {
-    Map<String, dynamic> currentNode = toTranslate;
-
-    for (int i = 0; i < toTranslate.entries.length; i++) {
-      var currentKey = currentNode.entries.elementAt(i).key;
+  Future<void> translateMap(Map<String, dynamic> currentNode, String language) async {
+    for (int i = 0; i < currentNode.keys.length; i++) {
+      var currentKey = currentNode.keys.elementAt(i);
       var currentValue = currentNode.entries.elementAt(i).value;
 
       if (currentValue is String) {
         var translation = useDeepL
             // Stefan put String in here
             ? await _deepLTranslate(
-                _removeFirstAndLastCharacter(
-                  currentValue,
-                ),
+                _removeEscapeCharacters(currentKey),
                 language,
               )
             : "<<Could not translate value>>";
-        currentNode.update(currentNode.entries.elementAt(i).key, (value) => translation);
-      } else if (currentValue is Map) {
-        currentNode = currentNode[currentKey];
-        // iterateMap(currentNode, language);
+        currentNode[currentKey] = _removeRedundantQuotes(translation);
+      } else if (currentValue is Map<String, dynamic>) {
+        await translateMap(currentValue, language);
       }
     }
-    return currentNode;
+  }
+
+  /// Clean up leaf string from escape backslashes "\""
+  String _removeEscapeCharacters(String string) {
+    if (string.contains(r'\')) {
+      string = string.replaceAll(r'\', '');
+    }
+    if (string.contains(r'\\')) {
+      string = string.replaceAll(r'\\', r'\');
+    }
+    return string;
+  }
+
+  /// Because DeepL strangely adds additional double quotes
+  String _removeRedundantQuotes(String string) {
+    if (string.contains('"')) {
+      string = string.replaceAll('"', '');
+    }
+    return string;
   }
 
   /// Updates each translation file and keeps track of all
