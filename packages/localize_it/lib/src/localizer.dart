@@ -65,7 +65,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
       ),
       rawLocation.lastIndexOf('/'),
     );
-    const directoryName = '/localizations';
+    const directoryName = '/translations';
 
     // Make Directory with path lib/l10n/localizations
     final localizationsDirectory = Directory(
@@ -85,8 +85,14 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
       await baseLocalizationDir.create();
     }
 
-    baseFilePath = baseLocalizationDir.path;
-    localizationFilePath = localizationsDirectory.path;
+    //String baseDir = rawLocation.substring(1, rawLocation.indexOf("lib"));
+
+    final translationDirectory = Directory(
+      "assets/translations",
+    );
+
+    baseFilePath = translationDirectory.path; // baseLocalizationDir.path;
+    localizationFilePath = translationDirectory.path; //localizationsDirectory.path;
 
     baseLanguageCode = visitor.baseLanguageCode;
     supportedLanguageCodes = visitor.supportedLanguageCodes;
