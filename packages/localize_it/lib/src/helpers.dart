@@ -1,10 +1,10 @@
-Map<String, dynamic> extractNonCommonSubset(Map<String, dynamic> oldMap, Map<String, dynamic> actualMap) {
+Map<String, dynamic> extractUncommonSubset(Map<String, dynamic> oldMap, Map<String, dynamic> actualMap) {
   Map<String, dynamic> newMap = {};
 
   actualMap.forEach((key, value) {
     if (oldMap.containsKey(key)) {
       if (value is Map<String, dynamic> && oldMap[key] is Map) {
-        newMap[key] = extractNonCommonSubset(oldMap[key], value);
+        newMap[key] = extractUncommonSubset(oldMap[key], value);
       }
     } else {
       newMap[key] = value;
@@ -25,13 +25,14 @@ String removeEscapeCharacters(String string) {
 }
 
 /// Because DeepL strangely adds additional double quotes
-String removeRedundantQuotes(String string) {
+String cleanAfterTranslation(String string) {
   if (string.contains('"')) {
     string = string.replaceAll('"', '');
   }
   if (string.contains(r'\\')) {
     string = string.replaceAll(r'\\', r'');
   }
+  string = unescapeDots(string);
   return string;
 }
 
@@ -86,4 +87,11 @@ bool checkforEquality(Map<String, dynamic> first, Map<String, dynamic> second) {
   }
 
   return true;
+}
+
+String unescapeDots(String input) {
+  if (input.contains(r'\.')) {
+    input = input.replaceAll(r'\.', r'.');
+  }
+  return input;
 }

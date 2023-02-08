@@ -66,7 +66,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
       ),
       rawLocation.lastIndexOf('/'),
     );
-    
+
     //const directoryName = '/translations';
 
     // // Make Directory with path lib/l10n/localizations
@@ -178,14 +178,14 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         if (currentRootNode.containsKey(segment)) {
           // NODE exists
           if (i == leafIndex) {
-            currentRootNode.addEntries([MapEntry(segment, segment)]);
+            currentRootNode.addEntries([MapEntry(segment, unescapeDots(segment))]);
           } else {
             currentRootNode = currentRootNode[segment];
           }
         } else {
           // NODE doesn't yet exist
           if (i == leafIndex) {
-            currentRootNode.addEntries([MapEntry(segment, segment)]);
+            currentRootNode.addEntries([MapEntry(segment, unescapeDots(segment))]);
           } else {
             final deeperNode = <String, dynamic>{};
             currentRootNode.addEntries([MapEntry(segment, deeperNode)]);
@@ -196,6 +196,8 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     }
     return finalMap;
   }
+
+ 
 
   String _cleanRawString(String input) {
     var cleanedString = "";
@@ -312,6 +314,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     // // get current state of tranlation for de, es, fr, ...
     String fileContent = "";
     try {
+      // TODO This file should also be a JSON for consistency
       fileContent = await _readFileContent(fileEntity.path);
     } catch (e) {
       stderr.writeln("Couldn't load fileContent, error: $e");
@@ -321,6 +324,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
     if (fileContent.isNotEmpty) {
       // if fileContent contains single quotes, swap them out for double quotes
+      // FIXME won't be necessary for
       if (fileContent.contains(r'\')) {
         fileContent = fileContent.replaceAll(r'\', r'\\');
       }
@@ -333,7 +337,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     //TODO IMPLEMENT FUNCTION: Only send NEW, UNTRANSLATED keys to Deepl (compare with old file content)
     //like: Map<String, dynamic> onlyNewKeyValues = compareMaps(oldMap, newMap)
 
-    var onlyNewTranslatables = extractNonCommonSubset(oldTranslations, presentTranslations);
+    var onlyNewTranslatables = extractUncommonSubset(oldTranslations, presentTranslations);
 
     final onlyNewTranslations = await translateMap(onlyNewTranslatables, language);
 
@@ -365,11 +369,12 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         var translation = useDeepL
             // Stefan put String in here
             ? await _deepLTranslate(
+                // clean string from escape characters before sending to DeepL
                 removeEscapeCharacters(currentKey),
                 language,
               )
             : "<<Could not translate value>>";
-        currentNode[currentKey] = removeRedundantQuotes(translation);
+        currentNode[currentKey] = cleanAfterTranslation(translation);
       } else if (currentValue is Map<String, dynamic>) {
         await translateMap(currentValue, language);
       }

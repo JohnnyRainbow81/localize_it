@@ -6,7 +6,7 @@ import 'package:localize_it/src/helpers.dart';
 
 void main() {
   test("test extraction of new keys", (() {
-    final returnedMap = extractNonCommonSubset(oldMap, actualMap);
+    final returnedMap = extractUncommonSubset(oldMap, actualMap);
 
     final jsonReturnedMap = jsonEncode(returnedMap);
     stdout.writeln("jsonReturnedMap: $jsonReturnedMap");

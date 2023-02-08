@@ -32,8 +32,8 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         backgroundColor: Colors.green[600],
         title: Text(
-          'Profile.Profile'.tr,
-          style: TextStyle(
+          'Profile.Lea.This is another case\.'.tr,
+          style: const TextStyle(
               fontSize: 14,
               color: Colors.black,
               fontWeight: FontWeight.bold),
@@ -51,7 +51,7 @@ class _ProfilePageState extends State<ProfilePage> {
               // ignore: prefer_single_quotes
               'Choose your destiny'.tr
               ,
-              style: TextStyle(
+              style: const TextStyle(
               fontSize: 16,
               color: Colors.black,
               fontWeight: FontWeight.bold),

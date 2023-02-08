@@ -1,23 +1,25 @@
 {
     "Profile": {
-        "Profile": "Profile"
+        "Lea": {
+            "This is another case\\.": "Dies ist ein weiterer Fall."
+        }
     },
-    "Choose your destiny": "Choose your destiny",
+    "Choose your destiny": "Wähle dein Schicksal",
     "Auth": {
         "JustAnotherKey": {
-            "Hey People! How are you?": "Hey People! How are you?"
+            "Hey People! How are you?": "Hallo Leute! Wie geht es euch?"
         },
         "Login": {
-            "I\\'m Chris\\.": "I\\'m Chris\\.",
-            "Here is another line": "Here is another line"
+            "I\\'m Chris\\.": "Ich bin Chris.",
+            "Here is another line": "Hier ist eine weitere Zeile"
         },
-        "This should work": "This should work",
+        "This should work": "Das sollte funktionieren",
         "AnotherKey": {
-            "Check this out": "Check this out"
+            "Check this out": "Schau dir das an"
         }
     },
     "Main": {
-        "How are you? I\\'m fine": "How are you? I\\'m fine"
+        "How are you? I\\'m fine": "Wie geht es dir? Mir geht\\'s gut"
     },
-    "Would this be a problem for you to be punctual tomorrow?": "Would this be a problem for you to be punctual tomorrow?"
+    "Would this be a problem for you to be punctual tomorrow?": "Wäre das ein Problem für dich, morgen pünktlich zu sein?"
 }
