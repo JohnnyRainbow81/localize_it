@@ -24,8 +24,9 @@ function activate(context) {
 		}
 
 		const folderName = 'l10n';
-
-		const directoryToCreate = path.join(parentDirectory, folderName);
+		
+		// Comment from Stefan : I didn't want the I10n subfolder
+		const directoryToCreate = path; //path.join(parentDirectory, folderName);  
 
 		// Create Directory inside Parent Directory
 		fs.mkdirSync(directoryToCreate, { recursive: true });
@@ -84,6 +85,8 @@ function activate(context) {
 		writeLine('	 /// prefer_more - for a more formal language if available, otherwise fallback to default formality');
 		writeLine('	 /// prefer_less - for a more informal language if available, otherwise fallback to default formality');
 		writeLine('  static const String formality = \'less\'');
+		content.write('\n');
+		writeLine('  static const bool asJsonFile = \'less\'');
 		writeLine('}');
 		content.end();
 

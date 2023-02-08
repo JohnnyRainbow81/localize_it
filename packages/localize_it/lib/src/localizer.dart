@@ -66,25 +66,26 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
       ),
       rawLocation.lastIndexOf('/'),
     );
-    const directoryName = '/translations';
+    
+    //const directoryName = '/translations';
 
-    // Make Directory with path lib/l10n/localizations
-    final localizationsDirectory = Directory(
-      pathForDirectory + directoryName,
-    );
+    // // Make Directory with path lib/l10n/localizations
+    // final localizationsDirectory = Directory(
+    //   pathForDirectory + directoryName,
+    // );
 
-    if (!localizationsDirectory.existsSync()) {
-      await localizationsDirectory.create();
-    }
+    // if (!localizationsDirectory.existsSync()) {
+    //   await localizationsDirectory.create();
+    // }
 
-    // Make Directory for Base Localization
-    final baseLocalizationDir = Directory(
-      '${localizationsDirectory.path}/base',
-    );
+    // // Make Directory for Base Localization
+    // final baseLocalizationDir = Directory(
+    //   '${localizationsDirectory.path}/base',
+    // );
 
-    if (!baseLocalizationDir.existsSync()) {
-      await baseLocalizationDir.create();
-    }
+    // if (!baseLocalizationDir.existsSync()) {
+    //   await baseLocalizationDir.create();
+    // }
 
     //String baseDir = rawLocation.substring(1, rawLocation.indexOf("lib"));
 
@@ -104,6 +105,8 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   Future<void> translate() async {
+    stdout.writeln("*** Translated by Stefan's customized version of localize_it, tag: productionReady ***");
+
     final translatableMap = await _parseFilesForTranslatableStrings();
 
     // generate our base lang file, in our case en.g.json
@@ -355,7 +358,6 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
   Future<Map<String, dynamic>> translateMap(Map<String, dynamic> currentNode, String language) async {
     for (int i = 0; i < currentNode.keys.length; i++) {
-
       var currentKey = currentNode.keys.elementAt(i);
       var currentValue = currentNode.entries.elementAt(i).value;
 
