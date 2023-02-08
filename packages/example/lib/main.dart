@@ -34,8 +34,8 @@ class _ProfilePageState extends State<ProfilePage> {
         title: Text(
           'Profile.Profile'.tr,
           style: TextStyle(
-              fontSize: 44,
-              color: Colors.green[100],
+              fontSize: 14,
+              color: Colors.black,
               fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -44,6 +44,8 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(  
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Container(height: 100,
+             width: 100, color:  Colors.pink,),
             Text(
               // ignore: prefer_single_quotes
               'Choose your destiny'.tr
@@ -56,6 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(
               height: 50,
             ),
+            Text('Auth.JustAnotherKey.Hey People! How are you?'.tr),
             Text('Auth.Login.I\'m Chris\.'.tr),
             Text('Main.How are you? I\'m fine'.tr),
             Text('Would this be a problem for you to be punctual tomorrow?'.tr),

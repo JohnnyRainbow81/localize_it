@@ -4,7 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
         {
             "name": "build runner debug example",
             "cwd": "packages/example",
@@ -13,6 +12,13 @@
             "type": "dart",
             "args": ["build"]
 
+        },
+        {
+            "name": "example",
+            "cwd": "packages/example",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug"
         },
         {
             "name": "example (profile mode)",

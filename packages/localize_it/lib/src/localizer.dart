@@ -7,6 +7,7 @@ import 'package:build/build.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:localize_it/src/helpers.dart';
 import 'package:localize_it_annotation/localize_it_annotation.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -142,8 +143,6 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         }
       });
       translatablesMap = toNestedMap(translatables);
-
-      stdout.writeln("keysWithTranslation: $translatablesMap");
 
       stdout.writeln('✅    Done!\n\n');
       return translatablesMap;
@@ -282,14 +281,14 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   Future<void> _translateToChosenLanguages(
-    Map<String, dynamic> keysWithTranslation,
+    Map<String, dynamic> translatableMap,
   ) async {
     final localizationFiles = await _getLocalizationFiles();
 
     await Future.forEach(localizationFiles, (File file) async {
       await _updateTranslation(
         file,
-        keysWithTranslation,
+        translatableMap,
       );
     });
 
@@ -299,17 +298,31 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   Future<void> _updateTranslation(
     FileSystemEntity fileEntity,
     // Map<String, dynamic> allTranslations,
-    Map<String, dynamic> toTranslateMap,
+    Map<String, dynamic> presentTranslations,
   ) async {
     // Reset counter for each file
     successfullyLocalizedCounter = 0;
     missingLocalizationsCounter = 0;
 
     stdout.writeln('Update localizations in ${_basePath(fileEntity)} ...\n');
-    stdout.writeln('fileNamesWithTranslation: $toTranslateMap');
 
     // // get current state of tranlation for de, es, fr, ...
-    // final fileContent = await _readFileContent(fileEntity.path);
+    String fileContent = "";
+    try {
+      fileContent = await _readFileContent(fileEntity.path);
+    } catch (e) {
+      stderr.writeln("Couldn't load fileContent, error: $e");
+    }
+
+    Map<String, dynamic> oldTranslations = {};
+
+    if (fileContent.isNotEmpty) {
+      // if fileContent contains single quotes, swap them out for double quotes
+      if (fileContent.contains(r'\')) {
+        fileContent = fileContent.replaceAll(r'\', r'\\');
+      }
+      oldTranslations = jsonDecode(fileContent);
+    }
 
     final file = File(fileEntity.path);
     final language = _getLanguage(file);
@@ -317,11 +330,15 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     //TODO IMPLEMENT FUNCTION: Only send NEW, UNTRANSLATED keys to Deepl (compare with old file content)
     //like: Map<String, dynamic> onlyNewKeyValues = compareMaps(oldMap, newMap)
 
-    await translateMap(toTranslateMap, language);
+    var onlyNewTranslatables = extractNonCommonSubset(oldTranslations, presentTranslations);
+
+    final onlyNewTranslations = await translateMap(onlyNewTranslatables, language);
+
+    final updatedTranslations = updateMapWithSubsetMap(presentTranslations, onlyNewTranslations);
 
     await _saveJSONFile(
       file,
-      toTranslateMap,
+      updatedTranslations,
       language: language,
     );
 
@@ -336,8 +353,9 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     stdout.writeln('✅    Done!\n\n');
   }
 
-  Future<void> translateMap(Map<String, dynamic> currentNode, String language) async {
+  Future<Map<String, dynamic>> translateMap(Map<String, dynamic> currentNode, String language) async {
     for (int i = 0; i < currentNode.keys.length; i++) {
+
       var currentKey = currentNode.keys.elementAt(i);
       var currentValue = currentNode.entries.elementAt(i).value;
 
@@ -345,35 +363,19 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         var translation = useDeepL
             // Stefan put String in here
             ? await _deepLTranslate(
-                _removeEscapeCharacters(currentKey),
+                removeEscapeCharacters(currentKey),
                 language,
               )
             : "<<Could not translate value>>";
-        currentNode[currentKey] = _removeRedundantQuotes(translation);
+        currentNode[currentKey] = removeRedundantQuotes(translation);
       } else if (currentValue is Map<String, dynamic>) {
         await translateMap(currentValue, language);
       }
     }
+    return currentNode;
   }
 
   /// Clean up leaf string from escape backslashes "\""
-  String _removeEscapeCharacters(String string) {
-    if (string.contains(r'\')) {
-      string = string.replaceAll(r'\', '');
-    }
-    if (string.contains(r'\\')) {
-      string = string.replaceAll(r'\\', r'\');
-    }
-    return string;
-  }
-
-  /// Because DeepL strangely adds additional double quotes
-  String _removeRedundantQuotes(String string) {
-    if (string.contains('"')) {
-      string = string.replaceAll('"', '');
-    }
-    return string;
-  }
 
   /// Returns the translation for the given [text] and the [language] in which it should be translated
   /// via the DeepL API

@@ -1,20 +1,23 @@
 {
     "Profile": {
-        "Profile": "Profil"
+        "Profile": "Profile"
     },
-    "Choose your destiny": "Wähle dein Schicksal",
+    "Choose your destiny": "Choose your destiny",
     "Auth": {
-        "Login": {
-            "I\\'m Chris\\.": "Ich bin Chris.",
-            "Here is another line": "Hier ist eine weitere Zeile"
+        "JustAnotherKey": {
+            "Hey People! How are you?": "Hey People! How are you?"
         },
-        "This should work": "Das sollte funktionieren",
+        "Login": {
+            "I\\'m Chris\\.": "I\\'m Chris\\.",
+            "Here is another line": "Here is another line"
+        },
+        "This should work": "This should work",
         "AnotherKey": {
-            "Check this out": "Schau dir das an"
+            "Check this out": "Check this out"
         }
     },
     "Main": {
-        "How are you? I\\'m fine": "Wie geht es dir? Mir geht\\'s gut"
+        "How are you? I\\'m fine": "How are you? I\\'m fine"
     },
-    "Would this be a problem for you to be punctual tomorrow?": "Wäre das ein Problem für dich, morgen pünktlich zu sein?"
+    "Would this be a problem for you to be punctual tomorrow?": "Would this be a problem for you to be punctual tomorrow?"
 }
