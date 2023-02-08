@@ -20,6 +20,7 @@ class LocaleConfiguration {
   static const List<String> supportedLanguageCodes = [
     'de',
     'es',
+    'fr'
   ];
 
   /// Providing a `deepLAuthKey` enables translation generation

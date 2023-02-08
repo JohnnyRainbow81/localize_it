@@ -15,16 +15,17 @@ Map<String, dynamic> extractUncommonSubset(Map<String, dynamic> oldMap, Map<Stri
 }
 
 String removeEscapeCharacters(String string) {
-  if (string.contains(r'\')) {
-    string = string.replaceAll(r'\', '');
-  }
   if (string.contains(r'\\')) {
     string = string.replaceAll(r'\\', r'\');
+  }
+  if (string.contains(r'\')) {
+    string = string.replaceAll(r'\', '');
   }
   return string;
 }
 
-/// Because DeepL strangely adds additional double quotes
+/// Because DeepL strangely adds additional double quotes and double backslashes
+/// Might be a bug in *my* code though?
 String cleanAfterTranslation(String string) {
   if (string.contains('"')) {
     string = string.replaceAll('"', '');
@@ -32,7 +33,11 @@ String cleanAfterTranslation(String string) {
   if (string.contains(r'\\')) {
     string = string.replaceAll(r'\\', r'');
   }
-  string = unescapeDots(string);
+  // In case there are single backslashes left (Shouldn't be)
+  if (string.contains(r'\')) {
+    string = string.replaceAll(r'\', r'');
+  }
+  //string = unescapeDots(string);
   return string;
 }
 
