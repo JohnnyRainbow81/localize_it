@@ -6,15 +6,27 @@ import 'package:localize_it/src/helpers.dart';
 
 void main() {
   test("test extraction of new keys", (() {
-    final returnedMap = extractUncommonSubset(oldMap, actualMap);
+    final newMap = extractUncommonSubset(oldMap, actualMap);
 
-    final jsonReturnedMap = jsonEncode(returnedMap);
-    stdout.writeln("jsonReturnedMap: $jsonReturnedMap");
+    final jsonNewMap = jsonEncode(newMap);
+    stdout.writeln("jsonNewMap: $jsonNewMap");
 
     final jsonExpectedMap = jsonEncode(expectedMap);
     stdout.writeln("jsonExpectedMap: $jsonExpectedMap");
 
-    expect(checkforEquality(returnedMap, expectedMap), true);
+    expect(checkforEquality(newMap, expectedMap), true);
+  }));
+
+  test("test extraction of new keys2", (() {
+    final newMap = extractUncommonSubset(oldMap2, actualMap2);
+
+    final jsonNewMap = jsonEncode(newMap);
+    stdout.writeln("jsonNewMap: $jsonNewMap");
+
+    final jsonExpectedMap = jsonEncode(expectedMap);
+    stdout.writeln("jsonExpectedMap: $jsonExpectedMap");
+
+    expect(checkforEquality(newMap, expectedMap2), true);
   }));
 
   test("integrate new translations into actual translations", (() {
@@ -103,6 +115,18 @@ Map<String, dynamic> resultMap = {
     "Settings": {"Change picture": "Change picture"}
   }
 };
+
+/////// V2
+///
+///
+Map<String, dynamic> oldMap2 = {
+  "Blabla": "Hello",
+  "Headline": {"Father": "Flash"}
+};
+
+Map<String, dynamic> actualMap2 = {"Gustav": "Courbet"};
+
+Map<String, dynamic> expectedMap2 = {"Gustav" : "Courbet"};
 
 /////////////
 /// second test

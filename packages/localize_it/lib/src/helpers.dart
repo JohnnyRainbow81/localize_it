@@ -3,7 +3,7 @@ Map<String, dynamic> extractUncommonSubset(Map<String, dynamic> oldMap, Map<Stri
 
   actualMap.forEach((key, value) {
     if (oldMap.containsKey(key)) {
-      if (value is Map<String, dynamic> && oldMap[key] is Map) {
+      if (value is Map<String, dynamic> && oldMap[key] is Map<String, dynamic>) {
         newMap[key] = extractUncommonSubset(oldMap[key], value);
       }
     } else {
@@ -13,6 +13,24 @@ Map<String, dynamic> extractUncommonSubset(Map<String, dynamic> oldMap, Map<Stri
 
   return newMap;
 }
+
+// Map<String, dynamic> extractUncommonSubset2(Map<String, dynamic> oldMap, Map<String, dynamic> actualMap) {
+//   Map<String, dynamic> newMap = {};
+
+//   for (int i = 0; i < actualMap.entries.length; i++) {
+//     MapEntry<String, dynamic> currentNode = actualMap.entries.elementAt(i);
+
+//     if (oldMap.containsKey(currentNode.key)) {
+//       continue;
+//     } else {
+//       if (currentNode.value is MapEntry<String, dynamic>) {
+//         extractUncommonSubset2(oldMap, currentNode.value);
+//       } else if (currentNode.value is String) {
+//         newMap.addEntries([currentNode]);
+//       }
+//     }
+//   }
+// }
 
 String removeEscapeCharacters(String string) {
   if (string.contains(r'\\')) {
@@ -46,11 +64,12 @@ Map<String, dynamic> updateMapWithSubsetMap(Map<String, dynamic> map, Map<String
     if (map.containsKey(key)) {
       if (value is Map<String, dynamic> && map[key] is Map<String, dynamic>) {
         map[key] = updateMapWithSubsetMap(map[key], value);
-      } else {
+      } else if (value is String && value.isNotEmpty) {
         map[key] = value;
       }
     } else {
-      map[key] = value;
+      map.remove(key);
+      // map[key] = value;
     }
   });
   return map;

@@ -46,7 +46,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Container(height: 100,
              width: 100, color:  Colors.pink,),
-             Text('Bla bla'),
+             Text('General.How are you doing all?'.tr),
             Text(
               // ignore: prefer_single_quotes
               'Choose your destiny'.tr

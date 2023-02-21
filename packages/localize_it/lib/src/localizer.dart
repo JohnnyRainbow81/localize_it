@@ -105,7 +105,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   Future<void> translate() async {
-    stdout.writeln("*** Translated by Stefan's customized version of localize_it, tag: productionReady ***");
+    stdout.writeln("*** Translated by Stefan's customized version of localize_it");
 
     final translatableMap = await _parseFilesForTranslatableStrings();
 
