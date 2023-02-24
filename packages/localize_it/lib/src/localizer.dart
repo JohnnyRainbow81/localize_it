@@ -197,8 +197,6 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     return finalMap;
   }
 
- 
-
   String _cleanRawString(String input) {
     var cleanedString = "";
     if (input.endsWith(".tr")) {
@@ -286,14 +284,15 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   Future<void> _translateToChosenLanguages(
+    // FIXME translatableMap only contains en-values! But must contain different values for every chosen language!
     Map<String, dynamic> translatableMap,
   ) async {
-    final localizationFiles = await _getLocalizationFiles();
+    final List<File> localizationFiles = await _getLocalizationFiles();
 
     await Future.forEach(localizationFiles, (File file) async {
       await _updateTranslation(
-        file,
-        translatableMap,
+        file, // every localized file. If it doesn't exist yet, it gets created.
+        translatableMap, // all the parsed Strings ending with ".tr"
       );
     });
 
@@ -303,7 +302,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   Future<void> _updateTranslation(
     FileSystemEntity fileEntity,
     // Map<String, dynamic> allTranslations,
-    Map<String, dynamic> presentTranslations,
+    Map<String, dynamic> parsedTranslatables,
   ) async {
     // Reset counter for each file
     successfullyLocalizedCounter = 0;
@@ -332,21 +331,28 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     }
 
     final file = File(fileEntity.path);
-    final language = _getLanguage(file);
+    final String languageCode = _getLanguage(file);
 
-    //TODO IMPLEMENT FUNCTION: Only send NEW, UNTRANSLATED keys to Deepl (compare with old file content)
-    //like: Map<String, dynamic> onlyNewKeyValues = compareMaps(oldMap, newMap)
+    // Compare the keys of the old translation files for en, de, es, ..etc to the new parsed keys
+    // and extract *only new keys* that should be translated. We get a map back that looks like 
+    // {"Hello how are you" : "Hello how are you", ...}
+    var onlyNewTranslatables = extractUncommonSubset(oldTranslations, parsedTranslatables);
 
-    var onlyNewTranslatables = extractUncommonSubset(oldTranslations, presentTranslations);
+    // Send the new, non-translated Strings to DeepL and get back a key/value map 
+    // with the new translations (like {"Hello how are you" : "iHola, que tal!"}, ...)
+    final onlyNewTranslations = await translateMap(onlyNewTranslatables, languageCode);
 
-    final onlyNewTranslations = await translateMap(onlyNewTranslatables, language);
+    // Clean the old translations from keys (&values) that were already deleted in the UI
+    // so we don't have carry any old outdated stuff with us
+    final cleanedOldTranslations = removeDeletedKeys(oldTranslations, parsedTranslatables);
 
-    final updatedTranslations = updateMapWithSubsetMap(presentTranslations, onlyNewTranslations);
+    // Integrate the new translation key/values map into the old translations map
+    final updatedTranslations = updateMapWithSubsetMap(cleanedOldTranslations, onlyNewTranslations);
 
     await _saveJSONFile(
       file,
       updatedTranslations,
-      language: language,
+      language: languageCode,
     );
 
     stdout.writeln(

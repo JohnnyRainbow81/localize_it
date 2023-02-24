@@ -24,48 +24,27 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // ProfileModel profile = ProfileModel();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green[600],
-        title: Text(
-          'Profile.Lea.This is another case\.'.tr,
-          style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black,
-              fontWeight: FontWeight.bold),
-        ),
         centerTitle: true,
-      ),  
+      ),
       body: Center(
-        child: Column(  
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(height: 100,
-             width: 100, color:  Colors.pink,),
-             Text('General.How are you doing all?'.tr),
-            Text(
-              // ignore: prefer_single_quotes
-              'Choose your destiny'.tr
-              ,
-              style: const TextStyle(
-              fontSize: 16,
-              color: Colors.black,
-              fontWeight: FontWeight.bold),
+            Container(
+              height: 100,
+              width: 100,
+              color: Colors.pink,
             ),
-            const SizedBox(
-              height: 50,
-            ),
-            Text('Auth.JustAnotherKey.Hey People! How are you?'.tr),
-            Text('Auth.Login.I\'m Chris\.'.tr),
-            Text('Main.How are you? I\'m fine'.tr),
-            Text('Would this be a problem for you to be punctual tomorrow?'.tr),
-            Text('Auth.This should work'.tr),
-            Text('Auth.Login.Here is another line'.tr),
-            Text('Auth.AnotherKey.Check this out'.tr)
+
+             Text('Fabian is talking about C#'.tr),
+            Text('Julien discusses with italien chefs about how to make Carbonara'.tr),
+            Text('Nice retro music here'.tr)
           ],
         ),
       ),
@@ -74,5 +53,6 @@ class _ProfilePageState extends State<ProfilePage> {
 }
 
 extension StringExtension on String {
-  String get tr => '';  
+  String get tr => '';
 }
+

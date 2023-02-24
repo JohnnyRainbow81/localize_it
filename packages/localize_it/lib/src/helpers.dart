@@ -1,18 +1,59 @@
+// Map<String, dynamic> extractUncommonSubset(Map<String, dynamic> oldMap, Map<String, dynamic> actualMap) {
+//   Map<String, dynamic> newMap = {};
+
+//   actualMap.forEach((key, value) {
+//     if (oldMap.containsKey(key)) {
+//       if (value is Map<String, dynamic> && oldMap[key] is Map) {
+//         newMap[key] = extractUncommonSubset(oldMap[key], value);
+//       }
+//     } else {
+//       newMap[key] = value;
+//     }
+//   });
+
+//   return newMap;
+// }
+
 Map<String, dynamic> extractUncommonSubset(Map<String, dynamic> oldMap, Map<String, dynamic> actualMap) {
   Map<String, dynamic> newMap = {};
 
   actualMap.forEach((key, value) {
     if (oldMap.containsKey(key)) {
-      if (value is Map<String, dynamic> && oldMap[key] is Map<String, dynamic>) {
-        newMap[key] = extractUncommonSubset(oldMap[key], value);
+      if (value is Map<String, dynamic> && oldMap[key] is Map) {
+        Map<String, dynamic> subMap = extractUncommonSubset(oldMap[key], value);
+        if (subMap.isNotEmpty) {
+          newMap[key] = subMap;
+        }
       }
     } else {
-      newMap[key] = value;
+      if (value != null && value != '') {
+        newMap[key] = value;
+      }
     }
   });
 
   return newMap;
 }
+
+Map<String, dynamic> removeDeletedKeys(Map<String, dynamic> oldTranslations, Map<String, dynamic> parsedTranslatables) {
+  oldTranslations.removeWhere((key, value) {
+    if (!parsedTranslatables.containsKey(key)) {
+      return true;
+    }
+    if (value is Map<String,dynamic> && parsedTranslatables[key] is Map<String, dynamic>) {
+      var newMap = removeDeletedKeys(value, parsedTranslatables[key]);
+      if (newMap.isEmpty) {
+        return true;
+      } else {
+        oldTranslations[key] = newMap;
+      }
+    }
+    return false;
+  });
+  return oldTranslations;
+}
+
+
 
 // Map<String, dynamic> extractUncommonSubset2(Map<String, dynamic> oldMap, Map<String, dynamic> actualMap) {
 //   Map<String, dynamic> newMap = {};
@@ -59,6 +100,21 @@ String cleanAfterTranslation(String string) {
   return string;
 }
 
+// Map<String, dynamic> updateMapWithSubsetMap(Map<String, dynamic> map, Map<String, dynamic> subset) {
+//   subset.forEach((key, value) {
+//     if (map.containsKey(key)) {
+//       if (value is Map<String, dynamic> && map[key] is Map<String, dynamic>) {
+//         map[key] = updateMapWithSubsetMap(map[key], value);
+//       } else if (value is String && value.isNotEmpty) {
+//         map[key] = value;
+//       }
+//     } else {
+//       map.remove(key);
+//     }
+//   });
+//   return map;
+// }
+
 Map<String, dynamic> updateMapWithSubsetMap(Map<String, dynamic> map, Map<String, dynamic> subset) {
   subset.forEach((key, value) {
     if (map.containsKey(key)) {
@@ -68,8 +124,11 @@ Map<String, dynamic> updateMapWithSubsetMap(Map<String, dynamic> map, Map<String
         map[key] = value;
       }
     } else {
-      map.remove(key);
-      // map[key] = value;
+      if (map.isEmpty || subset.keys.toSet().difference(map.keys.toSet()).contains(key)) {
+        map[key] = value;
+      } else {
+        map.remove(key);
+      }
     }
   });
   return map;

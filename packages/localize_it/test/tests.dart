@@ -37,7 +37,45 @@ void main() {
 
     expect(checkforEquality(updatedTranslations, expectedActualMapWithIntegrations), true);
   }));
+
+  test("delete deleted keys from map", () {
+    final clearedTranslations = removeDeletedKeys(oldMapWithRedundantKeys, parsedTranslatables);
+
+    final jsonOldMapWithRedundantKeys = jsonEncode(oldMapWithRedundantKeys);
+    stdout.writeln("jsonOldMapWithRedundantKeys: $jsonOldMapWithRedundantKeys");
+
+    final jsonClearedTranslations = jsonEncode(clearedTranslations);
+    stdout.writeln("jsonClearedTranslations: $jsonClearedTranslations");
+
+    expect(checkforEquality(clearedTranslations, expectedCleanedMaps), true);
+  });
 }
+
+Map<String, dynamic> oldMapWithRedundantKeys = {
+  "Auth": {
+    "Should be in": "This is another string", 
+    "This also": "Also another string", 
+    "This shouldn't be in the new Map": "Doctor"
+    },
+  "Hello World": "Hello Mrs Krabbabel",
+  "Also shouldn't be in": "Krokodil"
+};
+
+Map<String, dynamic> parsedTranslatables = {
+  "Auth": {
+    "Should be in": "Hello",
+    "This also": "Good bye",
+  },
+  "Hello World": "Hello World"
+};
+
+Map<String, dynamic> expectedCleanedMaps = {
+  "Auth": {
+    "Should be in": "This is another string",
+    "This also": "Also another string",
+  },
+  "Hello World": "Hello Mrs Krabbabel"
+};
 
 Map<String, dynamic> oldMap = {
   "Auth": {
@@ -126,7 +164,7 @@ Map<String, dynamic> oldMap2 = {
 
 Map<String, dynamic> actualMap2 = {"Gustav": "Courbet"};
 
-Map<String, dynamic> expectedMap2 = {"Gustav" : "Courbet"};
+Map<String, dynamic> expectedMap2 = {"Gustav": "Courbet"};
 
 /////////////
 /// second test
