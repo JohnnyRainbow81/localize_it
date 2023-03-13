@@ -16,3 +16,6 @@
              Text('Choose your destiny'.tr),
 
         Text('Profile.Lea.This is another case\.'.tr),
+  Text('Fabian is talking about C#'.tr),
+            Text('Julien discusses with italien chefs about how to make Carbonara'.tr),
+            Text('Nice retro music here'.tr)

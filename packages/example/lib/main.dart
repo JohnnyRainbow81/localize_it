@@ -41,10 +41,8 @@ class _ProfilePageState extends State<ProfilePage> {
               width: 100,
               color: Colors.pink,
             ),
-
-             Text('Fabian is talking about C#'.tr),
-            Text('Julien discusses with italien chefs about how to make Carbonara'.tr),
-            Text('Nice retro music here'.tr)
+            Text('Hallo Leute. Geht das hier auch auf englisch?'.tr)
+           
           ],
         ),
       ),

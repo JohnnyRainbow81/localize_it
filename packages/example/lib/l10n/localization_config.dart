@@ -8,7 +8,7 @@ class LocaleConfiguration {
   /// on [DeepL](https://www.deepl.com/de/docs-api/translate-text/translate-text/).
   ///
   /// Defaults to: 'de' (German)
-  static const String baseLanguageCode = 'en';
+  static const String baseLanguageCode = 'de';
 
   /// Expects language codes in **lowercase**.
   /// Should *not* contain `baseLanguageCode`.
@@ -18,7 +18,7 @@ class LocaleConfiguration {
   ///
   /// Defaults to: `['en' (English), 'es' (Spanish)]`
   static const List<String> supportedLanguageCodes = [
-    'de',
+    'en',
     'es',
     'fr'
   ];

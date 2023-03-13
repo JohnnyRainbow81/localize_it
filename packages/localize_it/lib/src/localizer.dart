@@ -334,11 +334,11 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     final String languageCode = _getLanguage(file);
 
     // Compare the keys of the old translation files for en, de, es, ..etc to the new parsed keys
-    // and extract *only new keys* that should be translated. We get a map back that looks like 
+    // and extract *only new keys* that should be translated. We get a map back that looks like
     // {"Hello how are you" : "Hello how are you", ...}
     var onlyNewTranslatables = extractUncommonSubset(oldTranslations, parsedTranslatables);
 
-    // Send the new, non-translated Strings to DeepL and get back a key/value map 
+    // Send the new, non-translated Strings to DeepL and get back a key/value map
     // with the new translations (like {"Hello how are you" : "iHola, que tal!"}, ...)
     final onlyNewTranslations = await translateMap(onlyNewTranslatables, languageCode);
 
@@ -404,6 +404,11 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         'source_lang': baseLanguageCode.toUpperCase(),
         'formality': formality
       };
+
+      // DeepL refuses translating to english with 'formality' param
+      if (language == "en") {
+        body.remove('formality');
+      }
 
       final response = await http.post(url, body: body);
 
