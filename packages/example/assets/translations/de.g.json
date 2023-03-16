@@ -1,1 +1,13 @@
-{"Hallo Leute":{" Geht das hier auch auf englisch?":" Geht das hier auch auf englisch?"}}
+{
+    "Hallo Leute": {
+        " Geht das hier auch auf englisch?": " Geht das hier auch auf englisch?"
+    },
+    "Auth": {
+        "Login": {
+            "Wie wird hiermit umgegangen? www\\.gehdahin\\.de": "Wie wird hiermit umgegangen? www.gehdahin.de"
+        }
+    },
+    "Beispiel Idioten Apostroph: Stefan\\'s Laden": "Beispiel Idioten Apostroph: Stefan's Laden",
+    "Brinkmann\\'s Stube": "Brinkmann's Stube",
+    "Moni\\'s Bar": "Moni's Bar"
+}

@@ -41,8 +41,13 @@ class _ProfilePageState extends State<ProfilePage> {
               width: 100,
               color: Colors.pink,
             ),
-            Text('Hallo Leute. Geht das hier auch auf englisch?'.tr)
-           
+            Text('Hallo Leute. Geht das hier auch auf englisch?'.tr),
+            Text('Auth.Login.Wie wird hiermit umgegangen? www\.gehdahin\.de'.tr),
+            Text('Beispiel Idioten Apostroph: Stefan\'s Laden'.tr),
+            Text('Brinkmann\'s Stube'.tr),
+            Text('Moni\'s Bar'.tr)
+
+
           ],
         ),
       ),

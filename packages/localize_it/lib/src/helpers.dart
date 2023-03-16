@@ -40,7 +40,7 @@ Map<String, dynamic> removeDeletedKeys(Map<String, dynamic> oldTranslations, Map
     if (!parsedTranslatables.containsKey(key)) {
       return true;
     }
-    if (value is Map<String,dynamic> && parsedTranslatables[key] is Map<String, dynamic>) {
+    if (value is Map<String, dynamic> && parsedTranslatables[key] is Map<String, dynamic>) {
       var newMap = removeDeletedKeys(value, parsedTranslatables[key]);
       if (newMap.isEmpty) {
         return true;
@@ -52,8 +52,6 @@ Map<String, dynamic> removeDeletedKeys(Map<String, dynamic> oldTranslations, Map
   });
   return oldTranslations;
 }
-
-
 
 // Map<String, dynamic> extractUncommonSubset2(Map<String, dynamic> oldMap, Map<String, dynamic> actualMap) {
 //   Map<String, dynamic> newMap = {};
@@ -95,6 +93,9 @@ String cleanAfterTranslation(String string) {
   // In case there are single backslashes left (Shouldn't be)
   if (string.contains(r'\')) {
     string = string.replaceAll(r'\', r'');
+  }
+  if (string.contains(r"\'")) {
+    string = string.replaceAll(r"\'", r"'");
   }
   //string = unescapeDots(string);
   return string;
@@ -172,13 +173,21 @@ bool checkforEquality(Map<String, dynamic> first, Map<String, dynamic> second) {
   return true;
 }
 
-String unescapeDots(String input) {
+String unescapeValueSpecificCharacters(String input) {
+  // This function removes escaping backslashes from the values
+  // of our base language since we don't need them in the values.
+  // E.g. a String like "Moni\'s Backstube" will be "Moni's Backstube" afterwards.
+  
   if (input.contains(r'\.')) {
     input = input.replaceAll(r'\.', r'.');
   }
   if (input.contains(r'\\.')) {
     input = input.replaceAll(r'\\.', r'.');
   }
- 
+
+  if (input.contains(r"\'")) {
+    input = input.replaceAll(r"\'", r"'");
+  }
+
   return input;
 }
