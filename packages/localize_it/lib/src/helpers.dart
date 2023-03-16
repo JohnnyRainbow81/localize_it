@@ -176,5 +176,9 @@ String unescapeDots(String input) {
   if (input.contains(r'\.')) {
     input = input.replaceAll(r'\.', r'.');
   }
+  if (input.contains(r'\\.')) {
+    input = input.replaceAll(r'\\.', r'.');
+  }
+ 
   return input;
 }
