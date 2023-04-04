@@ -177,7 +177,7 @@ String unescapeValueSpecificCharacters(String input) {
   // This function removes escaping backslashes from the values
   // of our base language since we don't need them in the values.
   // E.g. a String like "Moni\'s Backstube" will be "Moni's Backstube" afterwards.
-  
+
   if (input.contains(r'\.')) {
     input = input.replaceAll(r'\.', r'.');
   }
@@ -189,5 +189,12 @@ String unescapeValueSpecificCharacters(String input) {
     input = input.replaceAll(r"\'", r"'");
   }
 
+  return input;
+}
+
+String unescapeKeySpecificCharacters(String input) {
+  if (input.contains(r"\'")) {
+    input = input.replaceAll(r"\'", r"'");
+  }
   return input;
 }

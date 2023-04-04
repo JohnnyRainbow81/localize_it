@@ -178,14 +178,14 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         if (currentRootNode.containsKey(segment)) {
           // NODE exists
           if (i == leafIndex) {
-            currentRootNode.addEntries([MapEntry(segment, unescapeValueSpecificCharacters(segment))]);
+            currentRootNode.addEntries([MapEntry(unescapeKeySpecificCharacters(segment), unescapeValueSpecificCharacters(segment))]);
           } else {
             currentRootNode = currentRootNode[segment];
           }
         } else {
           // NODE doesn't yet exist
           if (i == leafIndex) {
-            currentRootNode.addEntries([MapEntry(segment, unescapeValueSpecificCharacters(segment))]);
+            currentRootNode.addEntries([MapEntry(unescapeKeySpecificCharacters(segment), unescapeValueSpecificCharacters(segment))]);
           } else {
             final deeperNode = <String, dynamic>{};
             currentRootNode.addEntries([MapEntry(segment, deeperNode)]);
