@@ -144,7 +144,14 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
       await Future.forEach(dartFiles, (File fileEntity) async {
         stdout.writeln('     Reading file content of file ${fileEntity.path}...\n');
-        fileContent = await _readFileContent(fileEntity.path);
+
+        try {
+          fileContent = await _readFileContent(fileEntity.path);
+        } catch (e) {
+          stdout.writeln('❌    Error in _readFileContent for ${fileEntity.path}. \n');
+          stdout.writeln('      Error: $e. \n');
+          stdout.writeln('      Filecontent: ${fileEntity.toString()}');
+        }
 
         final regex = RegExp(r"'[^']*(\\'[^']*)*'\.tr");
 
