@@ -133,62 +133,73 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
     late String fileContent;
 
-    stdout.writeln('     Getting directory contents of "libDir": ${libDir.path}...\n');
-    final files = await _getDirectorysContents(libDir);
+    try {
+      stdout.writeln('     Getting directory contents of "libDir": ${libDir.path}...\n');
+      final files = await _getDirectorysContents(libDir);
 
-    stdout.writeln('     Getting dart files...\n');
-    final dartFiles = _getDartFiles(files);
+      stdout.writeln('     Getting dart files...\n');
+      final dartFiles = _getDartFiles(files);
 
-    final List<String> translatables = [];
+      final List<String> translatables = [];
 
-    await Future.forEach(dartFiles, (File fileEntity) async {
-      stdout.writeln('     Reading file content of file ${fileEntity.path}...\n');
+      await Future.forEach(dartFiles, (File fileEntity) async {
+        stdout.writeln('     Reading file content of file ${fileEntity.path}...\n');
 
-      try {
-        fileContent = await _readFileContent(fileEntity.path);
-      } catch (error1) {
-        stdout.writeln('❌    Error in _readFileContent for ${fileEntity.path}. \n');
-        stdout.writeln('      Error: $error1. \n');
-        stdout.writeln('      Filecontent: ${fileEntity.toString()}');
-      }
-
-      final regex = RegExp(r"'[^']*(\\'[^']*)*'\.tr");
-      Iterable<RegExpMatch> wordMatches = [];
-
-      try {
-        stdout.writeln('     Getting all matches of fileContent...\n');
-        wordMatches = regex.allMatches(fileContent);
-      } catch (error2) {
-        stdout.writeln('❌    Error in word matching for ${fileEntity.path}. \n');
-        stdout.writeln('      Error: $error2. \n');
-        stdout.writeln('      Filecontent: ${fileContent.toString()}');
-        stdout.writeln('      wordMatches: ${wordMatches.toString()}');
-      }
-
-      for (final wordMatch in wordMatches) {
         try {
-          final rawTranslatable = wordMatch.group(0)!;
-          stdout.writeln('     Handling rawTranslatable $rawTranslatable...\n');
-
-          // Clean up our strings like "'Auth.Login.This is my value'.tr"
-          final cleanTranslatable = _cleanRawString(rawTranslatable);
-          stdout.writeln('     Cleaned up translatable: $cleanTranslatable...\n');
-
-          translatables.add(cleanTranslatable);
-        } catch (error3) {
-          stdout.writeln('❌    Error in cleaning up translatables for ${fileEntity.path}. \n');
-          stdout.writeln('      Error: $error3. \n');
-          stdout.writeln('      Filecontent: ${fileContent.toString()}');
-          stdout.writeln('      wordMatch: ${wordMatch.toString()}');
+          fileContent = await _readFileContent(fileEntity.path);
+        } catch (error1) {
+          stdout.writeln('❌    Error in _readFileContent for ${fileEntity.path}. \n');
+          stdout.writeln('      Error: $error1. \n');
+          stdout.writeln('      Filecontent: ${fileEntity.toString()}');
         }
 
-        // keysAndValueStrings.add(cleanedKeyAndValue);
-      }
-    });
-    translatablesMap = toNestedMap(translatables);
+        final regex = RegExp(r"'[^']*(\\'[^']*)*'\.tr");
+        Iterable<RegExpMatch> wordMatches = [];
 
-    stdout.writeln('✅    Done!\n\n');
-    return translatablesMap;
+        try {
+          stdout.writeln('     Getting all matches of fileContent...\n');
+          wordMatches = regex.allMatches(fileContent);
+        } catch (error2) {
+          stdout.writeln('❌    Error in word matching for ${fileEntity.path}. \n');
+          stdout.writeln('      Error: $error2. \n');
+          stdout.writeln('      Filecontent: ${fileContent.toString()}');
+          stdout.writeln('      wordMatches: ${wordMatches.toString()}');
+        }
+
+        for (final wordMatch in wordMatches) {
+          try {
+            final rawTranslatable = wordMatch.group(0)!;
+            stdout.writeln('     Handling rawTranslatable $rawTranslatable...\n');
+
+            // Clean up our strings like "'Auth.Login.This is my value'.tr"
+            final cleanTranslatable = _cleanRawString(rawTranslatable);
+            stdout.writeln('     Cleaned up translatable: $cleanTranslatable...\n');
+
+            translatables.add(cleanTranslatable);
+          } catch (error3) {
+            stdout.writeln('❌    Error in cleaning up translatables for ${fileEntity.path}. \n');
+            stdout.writeln('      Error: $error3. \n');
+            stdout.writeln('      Filecontent: ${fileContent.toString()}');
+            stdout.writeln('      wordMatch: ${wordMatch.toString()}');
+          }
+
+          // keysAndValueStrings.add(cleanedKeyAndValue);
+        }
+      });
+      translatablesMap = toNestedMap(translatables);
+
+      stdout.writeln('✅    Done!\n\n');
+      return translatablesMap;
+    } catch (exception) {
+      stdout.writeln('❌    Something went wrong while localizing. \n');
+      stdout.writeln('      Error: $exception\nException is of type ${exception.runtimeType}\n ');
+      stdout.writeln('      Some context: \nTranslatables ${translatablesMap.toString()}\n\n ');
+      stdout.writeln('StackTrace.current:\n');
+
+      stdout.writeln(StackTrace.current);
+
+      return translatablesMap;
+    }
   }
 
   Map<String, dynamic> toNestedMap(List<String> stringList) {
