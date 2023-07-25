@@ -128,7 +128,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     late String fileContent;
 
     try {
-      stdout.writeln('     Getting directory contents...');
+      stdout.writeln('     Getting directory contents of "currentDir": ${currentDir.path}...');
       final files = await _getDirectorysContents(currentDir);
 
       stdout.writeln('     Getting dart files...');
@@ -165,7 +165,10 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     } catch (exception) {
       stdout.writeln('❌    Something went wrong while localizing. \n');
       stdout.writeln('      Error: $exception\nException is of type ${exception.runtimeType}\n ');
-      stdout.writeln('      Some context: \nTranslatables ${translatablesMap.toString()} ');
+      stdout.writeln('      Some context: \nTranslatables ${translatablesMap.toString()}\n\n ');
+      stdout.writeln('StackTrace.current:');
+      
+      stdout.writeln(StackTrace.current);
 
       return translatablesMap;
     }
