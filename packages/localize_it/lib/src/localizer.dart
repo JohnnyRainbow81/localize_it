@@ -57,7 +57,6 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     // If we prefer double quotes OR want a JSON file, use double quotes, else use single quotes
     //escapedQuote = (preferDoubleQuotes || asJsonFile) ? '"' : '\'';
     missingTranslationPlaceholderText = '--missing translation--';
-
     final rawLocation = visitor.location;
 
     final pathForDirectory = rawLocation.substring(
@@ -122,36 +121,43 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   Future<Map<String, dynamic>> _parseFilesForTranslatableStrings() async {
-    final currentDir = Directory.current;
+    // Getting root directory
+    final directory = Directory.current;
+
+    // Only parse files in Flutter's 'lib' directory
+    final libDir = Directory('${directory.path}/lib');
+
+    stdout.writeln('    libDir: ${libDir.path}...\n');
+
     Map<String, dynamic> translatablesMap = {};
 
     late String fileContent;
 
     try {
-      stdout.writeln('     Getting directory contents of "currentDir": ${currentDir.path}...');
-      final files = await _getDirectorysContents(currentDir);
+      stdout.writeln('     Getting directory contents of "libDir": ${libDir.path}...\n');
+      final files = await _getDirectorysContents(libDir);
 
-      stdout.writeln('     Getting dart files...');
+      stdout.writeln('     Getting dart files...\n');
       final dartFiles = _getDartFiles(files);
 
       final List<String> translatables = [];
 
       await Future.forEach(dartFiles, (File fileEntity) async {
-        stdout.writeln('     Reading file content of file ${fileEntity.path}...');
+        stdout.writeln('     Reading file content of file ${fileEntity.path}...\n');
         fileContent = await _readFileContent(fileEntity.path);
 
         final regex = RegExp(r"'[^']*(\\'[^']*)*'\.tr");
 
-        stdout.writeln('     Getting all matches of fileContent...');
+        stdout.writeln('     Getting all matches of fileContent...\n');
         final wordMatches = regex.allMatches(fileContent);
 
         for (final wordMatch in wordMatches) {
           final rawTranslatable = wordMatch.group(0)!;
-          stdout.writeln('     Handling rawTranslatable $rawTranslatable...');
+          stdout.writeln('     Handling rawTranslatable $rawTranslatable...\n');
 
           // Clean up our strings like "'Auth.Login.This is my value'.tr"
           final cleanTranslatable = _cleanRawString(rawTranslatable);
-          stdout.writeln('     Cleaned up translatable: $cleanTranslatable...');
+          stdout.writeln('     Cleaned up translatable: $cleanTranslatable...\n');
 
           translatables.add(cleanTranslatable);
 
@@ -166,8 +172,8 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
       stdout.writeln('❌    Something went wrong while localizing. \n');
       stdout.writeln('      Error: $exception\nException is of type ${exception.runtimeType}\n ');
       stdout.writeln('      Some context: \nTranslatables ${translatablesMap.toString()}\n\n ');
-      stdout.writeln('StackTrace.current:');
-      
+      stdout.writeln('StackTrace.current:\n');
+
       stdout.writeln(StackTrace.current);
 
       return translatablesMap;
