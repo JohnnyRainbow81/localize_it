@@ -128,21 +128,32 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     late String fileContent;
 
     try {
+      stdout.writeln('     Getting directory contents...');
       final files = await _getDirectorysContents(currentDir);
+
+      stdout.writeln('     Getting dart files...');
       final dartFiles = _getDartFiles(files);
+
       final List<String> translatables = [];
 
       await Future.forEach(dartFiles, (File fileEntity) async {
-         fileContent = await _readFileContent(fileEntity.path);
+        stdout.writeln('     Reading file content of file $fileEntity...');
+        fileContent = await _readFileContent(fileEntity.path);
 
         final regex = RegExp(r"'[^']*(\\'[^']*)*'\.tr");
+
+        stdout.writeln('     Getting all matches of fileContent $fileContent...');
         final wordMatches = regex.allMatches(fileContent);
 
         for (final wordMatch in wordMatches) {
           final rawTranslatable = wordMatch.group(0)!;
+          stdout.writeln('     Handling rawTranslatable $rawTranslatable...');
 
           // Clean up our strings like "'Auth.Login.This is my value'.tr"
-          translatables.add(_cleanRawString(rawTranslatable));
+          final cleanTranslatable = _cleanRawString(rawTranslatable);
+          stdout.writeln('     Cleaned up translatable: $cleanTranslatable...');
+
+          translatables.add(cleanTranslatable);
 
           // keysAndValueStrings.add(cleanedKeyAndValue);
         }
@@ -151,7 +162,6 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
       stdout.writeln('✅    Done!\n\n');
       return translatablesMap;
-
     } catch (exception) {
       stdout.writeln('❌    Something went wrong while localizing. \n');
       stdout.writeln('      Error: $exception\nException is of type ${exception.runtimeType}\n ');
