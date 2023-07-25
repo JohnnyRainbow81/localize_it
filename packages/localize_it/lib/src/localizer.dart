@@ -147,9 +147,9 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
         try {
           fileContent = await _readFileContent(fileEntity.path);
-        } catch (e) {
+        } catch (error1) {
           stdout.writeln('❌    Error in _readFileContent for ${fileEntity.path}. \n');
-          stdout.writeln('      Error: $e. \n');
+          stdout.writeln('      Error: $error1. \n');
           stdout.writeln('      Filecontent: ${fileEntity.toString()}');
         }
 
@@ -172,9 +172,9 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
             // keysAndValueStrings.add(cleanedKeyAndValue);
           }
-        } catch (e) {
+        } catch (error2) {
           stdout.writeln('❌    Error in word matching for ${fileEntity.path}. \n');
-          stdout.writeln('      Error: $e. \n');
+          stdout.writeln('      Error: $error2. \n');
           stdout.writeln('      Filecontent: ${fileContent.toString()}');
           stdout.writeln('      wordMatches: ${wordMatches.toString()}');
         }
