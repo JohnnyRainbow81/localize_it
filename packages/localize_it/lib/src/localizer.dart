@@ -167,14 +167,21 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         }
 
         for (final wordMatch in wordMatches) {
-          final rawTranslatable = wordMatch.group(0)!;
-          stdout.writeln('     Handling rawTranslatable $rawTranslatable...\n');
+          try {
+            final rawTranslatable = wordMatch.group(0)!;
+            stdout.writeln('     Handling rawTranslatable $rawTranslatable...\n');
 
-          // Clean up our strings like "'Auth.Login.This is my value'.tr"
-          final cleanTranslatable = _cleanRawString(rawTranslatable);
-          stdout.writeln('     Cleaned up translatable: $cleanTranslatable...\n');
+            // Clean up our strings like "'Auth.Login.This is my value'.tr"
+            final cleanTranslatable = _cleanRawString(rawTranslatable);
+            stdout.writeln('     Cleaned up translatable: $cleanTranslatable...\n');
 
-          translatables.add(cleanTranslatable);
+            translatables.add(cleanTranslatable);
+          } catch (error3) {
+            stdout.writeln('❌    Error in cleaning up translatables for ${fileEntity.path}. \n');
+            stdout.writeln('      Error: $error3. \n');
+            stdout.writeln('      Filecontent: ${fileContent.toString()}');
+            stdout.writeln('      wordMatch: ${wordMatch.toString()}');
+          }
 
           // keysAndValueStrings.add(cleanedKeyAndValue);
         }
