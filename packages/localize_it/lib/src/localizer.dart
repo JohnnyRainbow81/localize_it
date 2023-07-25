@@ -145,43 +145,23 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
       await Future.forEach(dartFiles, (File fileEntity) async {
         stdout.writeln('     Reading file content of file ${fileEntity.path}...\n');
 
-        try {
-          fileContent = await _readFileContent(fileEntity.path);
-        } catch (error1) {
-          stdout.writeln('❌    Error in _readFileContent for ${fileEntity.path}. \n');
-          stdout.writeln('      Error: $error1. \n');
-          stdout.writeln('      Filecontent: ${fileEntity.toString()}');
-        }
+        fileContent = await _readFileContent(fileEntity.path);
 
         final regex = RegExp(r"'[^']*(\\'[^']*)*'\.tr");
         Iterable<RegExpMatch> wordMatches = [];
 
-        try {
-          stdout.writeln('     Getting all matches of fileContent...\n');
-          wordMatches = regex.allMatches(fileContent);
-        } catch (error2) {
-          stdout.writeln('❌    Error in word matching for ${fileEntity.path}. \n');
-          stdout.writeln('      Error: $error2. \n');
-          stdout.writeln('      Filecontent: ${fileContent.toString()}');
-          stdout.writeln('      wordMatches: ${wordMatches.toString()}');
-        }
+        stdout.writeln('     Getting all matches of fileContent...\n');
+        wordMatches = regex.allMatches(fileContent);
 
         for (final wordMatch in wordMatches) {
-          try {
-            final rawTranslatable = wordMatch.group(0)!;
-            stdout.writeln('     Handling rawTranslatable $rawTranslatable...\n');
+          final rawTranslatable = wordMatch.group(0)!;
+          stdout.writeln('     Handling rawTranslatable $rawTranslatable...\n');
 
-            // Clean up our strings like "'Auth.Login.This is my value'.tr"
-            final cleanTranslatable = _cleanRawString(rawTranslatable);
-            stdout.writeln('     Cleaned up translatable: $cleanTranslatable...\n');
+          // Clean up our strings like "'Auth.Login.This is my value'.tr"
+          final cleanTranslatable = _cleanRawString(rawTranslatable);
+          stdout.writeln('     Cleaned up translatable: $cleanTranslatable...\n');
 
-            translatables.add(cleanTranslatable);
-          } catch (error3) {
-            stdout.writeln('❌    Error in cleaning up translatables for ${fileEntity.path}. \n');
-            stdout.writeln('      Error: $error3. \n');
-            stdout.writeln('      Filecontent: ${fileContent.toString()}');
-            stdout.writeln('      wordMatch: ${wordMatch.toString()}');
-          }
+          translatables.add(cleanTranslatable);
 
           // keysAndValueStrings.add(cleanedKeyAndValue);
         }
@@ -203,8 +183,12 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   Map<String, dynamic> toNestedMap(List<String> stringList) {
-    // list = "Auth.Login.This is my leaf", "Auth.Login.This is my second lef"
-    stdout.writeln('     Converting string list $stringList to nested map... \n');
+    // This stringList contains ALL translatable string keys we have in the UI! Might be a huge string..
+
+    // Example: 
+    // stringList = ["Auth.Login.This is my leaf", "Profile.Pro User.This is my second lef", ...]
+    
+    stdout.writeln('     Converting string list, which contains ${stringList.length} entries, to nested map... \n');
 
     RegExp regExp = RegExp(r"(?<!\\)\."); // Only use "." as delimiter, not "\."
 
@@ -222,25 +206,31 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
       for (int i = 0; i < segments.length; i++) {
         final segment = segments[i];
 
-        if (currentRootNode.containsKey(segment)) {
-          // NODE exists
-          if (i == leafIndex) {
-            currentRootNode.addEntries([MapEntry(unescapeKeySpecificCharacters(segment), unescapeValueSpecificCharacters(segment))]);
-          } else {
-            stdout.writeln('    currentRootNode: $currentRootNode');
-            stdout.writeln('    segment: $segment');
+        // This might be error prone, so do some finer grained error handling here
+        try {
+          if (currentRootNode.containsKey(segment)) {
+            // NODE exists
+            if (i == leafIndex) {
+              currentRootNode.addEntries([MapEntry(unescapeKeySpecificCharacters(segment), unescapeValueSpecificCharacters(segment))]);
+            } else {
+              stdout.writeln('    currentRootNode: $currentRootNode');
+              stdout.writeln('    segment: $segment');
 
-            currentRootNode = currentRootNode[segment];
-          }
-        } else {
-          // NODE doesn't yet exist
-          if (i == leafIndex) {
-            currentRootNode.addEntries([MapEntry(unescapeKeySpecificCharacters(segment), unescapeValueSpecificCharacters(segment))]);
+              currentRootNode = currentRootNode[segment];
+            }
           } else {
-            final deeperNode = <String, dynamic>{};
-            currentRootNode.addEntries([MapEntry(segment, deeperNode)]);
-            currentRootNode = deeperNode;
+            // NODE doesn't yet exist
+            if (i == leafIndex) {
+              currentRootNode.addEntries([MapEntry(unescapeKeySpecificCharacters(segment), unescapeValueSpecificCharacters(segment))]);
+            } else {
+              final deeperNode = <String, dynamic>{};
+              currentRootNode.addEntries([MapEntry(segment, deeperNode)]);
+              currentRootNode = deeperNode;
+            }
           }
+        } catch (e) {
+          stdout.writeln('❌   Error while converting string list to nested map. \n');
+          stdout.writeln('     Segment: $segment \n');
         }
       }
     }
