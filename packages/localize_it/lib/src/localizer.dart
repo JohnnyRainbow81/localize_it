@@ -151,7 +151,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
       return translatablesMap;
     } catch (exception) {
       stdout.writeln('❌    Something went wrong while localizing. \n');
-      stdout.writeln('      Error: $exception\n\n');
+      stdout.writeln('      Error: $exception\nException is of type ${exception.runtimeType}\n ');
       return translatablesMap;
     }
   }
@@ -202,8 +202,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     if (input.endsWith(".tr")) {
       cleanedString = input.substring(0, input.length - 3);
     }
-    if ((cleanedString[0] == '"' || cleanedString[0] == "'") &&
-        (cleanedString[cleanedString.length - 1] == '"' || cleanedString[cleanedString.length - 1] == "'")) {
+    if ((cleanedString[0] == '"' || cleanedString[0] == "'") && (cleanedString[cleanedString.length - 1] == '"' || cleanedString[cleanedString.length - 1] == "'")) {
       cleanedString = cleanedString.substring(1, cleanedString.length - 1);
     }
     return cleanedString;
@@ -233,8 +232,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     final files = <FileSystemEntity>[];
     final completer = Completer<List<FileSystemEntity>>();
     final lister = directory.list(recursive: true);
-    lister.listen((file) => files.add(file),
-        onError: (Object error) => completer.completeError(error), onDone: () => completer.complete(files));
+    lister.listen((file) => files.add(file), onError: (Object error) => completer.completeError(error), onDone: () => completer.complete(files));
     return completer.future;
   }
 
@@ -275,8 +273,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
   }
 
   Future<File> _getBaseFile() async {
-    final file =
-        asJsonFile ? File('$baseFilePath/$baseLanguageCode.g.json') : File('$baseFilePath/$baseLanguageCode.g.dart');
+    final file = asJsonFile ? File('$baseFilePath/$baseLanguageCode.g.json') : File('$baseFilePath/$baseLanguageCode.g.dart');
     if (!file.existsSync()) {
       await file.create();
     }
@@ -397,13 +394,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     try {
       final url = Uri.https('api-free.deepl.com', '/v2/translate');
 
-      final body = <String, dynamic>{
-        'auth_key': deepLAuthKey,
-        'text': text,
-        'target_lang': language,
-        'source_lang': baseLanguageCode.toUpperCase(),
-        'formality': formality
-      };
+      final body = <String, dynamic>{'auth_key': deepLAuthKey, 'text': text, 'target_lang': language, 'source_lang': baseLanguageCode.toUpperCase(), 'formality': formality};
 
       // DeepL refuses translating to english with 'formality' param
       if (language == "en") {
