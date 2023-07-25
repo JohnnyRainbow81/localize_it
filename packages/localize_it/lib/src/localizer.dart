@@ -227,6 +227,9 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
           if (i == leafIndex) {
             currentRootNode.addEntries([MapEntry(unescapeKeySpecificCharacters(segment), unescapeValueSpecificCharacters(segment))]);
           } else {
+            stdout.writeln('    currentRootNode: $currentRootNode');
+            stdout.writeln('    segment: $segment');
+
             currentRootNode = currentRootNode[segment];
           }
         } else {
