@@ -125,13 +125,15 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     final currentDir = Directory.current;
     Map<String, dynamic> translatablesMap = {};
 
+    late String fileContent;
+
     try {
       final files = await _getDirectorysContents(currentDir);
       final dartFiles = _getDartFiles(files);
       final List<String> translatables = [];
 
       await Future.forEach(dartFiles, (File fileEntity) async {
-        final fileContent = await _readFileContent(fileEntity.path);
+         fileContent = await _readFileContent(fileEntity.path);
 
         final regex = RegExp(r"'[^']*(\\'[^']*)*'\.tr");
         final wordMatches = regex.allMatches(fileContent);
@@ -152,6 +154,9 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
     } catch (exception) {
       stdout.writeln('❌    Something went wrong while localizing. \n');
       stdout.writeln('      Error: $exception\nException is of type ${exception.runtimeType}\n ');
+      stdout.writeln('      Some context: \nTranslatableMap ${translatablesMap.entries.toString()} ');
+      stdout.writeln('      FileContent: $fileContent');
+
       return translatablesMap;
     }
   }
