@@ -204,6 +204,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
   Map<String, dynamic> toNestedMap(List<String> stringList) {
     // list = "Auth.Login.This is my leaf", "Auth.Login.This is my second lef"
+    stdout.writeln('     Converting string list $stringList to nested map... \n');
 
     RegExp regExp = RegExp(r"(?<!\\)\."); // Only use "." as delimiter, not "\."
 
