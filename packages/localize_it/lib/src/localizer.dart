@@ -190,11 +190,11 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
       stdout.writeln('✅    Done!\n\n');
       return translatablesMap;
-    } catch (exception) {
+    } catch (exception, stacktrace) {
       stdout.writeln('❌    Something went wrong while localizing. \n');
-      stdout.writeln('      Error: $exception\nException is of type ${exception.runtimeType}\n ');
+      stdout.writeln('      Error: ${exception.toString()}\nException is of type ${exception.runtimeType}\n ');
       stdout.writeln('      Some context: \nTranslatables ${translatablesMap.toString()}\n\n ');
-      stdout.writeln('StackTrace.current:\n');
+      stdout.writeln('      stackTrace:${stacktrace.toString()} \n');
 
       stdout.writeln(StackTrace.current);
 
