@@ -159,24 +159,24 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
         try {
           stdout.writeln('     Getting all matches of fileContent...\n');
           wordMatches = regex.allMatches(fileContent);
-
-          for (final wordMatch in wordMatches) {
-            final rawTranslatable = wordMatch.group(0)!;
-            stdout.writeln('     Handling rawTranslatable $rawTranslatable...\n');
-
-            // Clean up our strings like "'Auth.Login.This is my value'.tr"
-            final cleanTranslatable = _cleanRawString(rawTranslatable);
-            stdout.writeln('     Cleaned up translatable: $cleanTranslatable...\n');
-
-            translatables.add(cleanTranslatable);
-
-            // keysAndValueStrings.add(cleanedKeyAndValue);
-          }
         } catch (error2) {
           stdout.writeln('❌    Error in word matching for ${fileEntity.path}. \n');
           stdout.writeln('      Error: $error2. \n');
           stdout.writeln('      Filecontent: ${fileContent.toString()}');
           stdout.writeln('      wordMatches: ${wordMatches.toString()}');
+        }
+
+        for (final wordMatch in wordMatches) {
+          final rawTranslatable = wordMatch.group(0)!;
+          stdout.writeln('     Handling rawTranslatable $rawTranslatable...\n');
+
+          // Clean up our strings like "'Auth.Login.This is my value'.tr"
+          final cleanTranslatable = _cleanRawString(rawTranslatable);
+          stdout.writeln('     Cleaned up translatable: $cleanTranslatable...\n');
+
+          translatables.add(cleanTranslatable);
+
+          // keysAndValueStrings.add(cleanedKeyAndValue);
         }
       });
       translatablesMap = toNestedMap(translatables);
