@@ -137,12 +137,12 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
       final List<String> translatables = [];
 
       await Future.forEach(dartFiles, (File fileEntity) async {
-        stdout.writeln('     Reading file content of file $fileEntity...');
+        stdout.writeln('     Reading file content of file ${fileEntity.path}...');
         fileContent = await _readFileContent(fileEntity.path);
 
         final regex = RegExp(r"'[^']*(\\'[^']*)*'\.tr");
 
-        stdout.writeln('     Getting all matches of fileContent $fileContent...');
+        stdout.writeln('     Getting all matches of fileContent...');
         final wordMatches = regex.allMatches(fileContent);
 
         for (final wordMatch in wordMatches) {
