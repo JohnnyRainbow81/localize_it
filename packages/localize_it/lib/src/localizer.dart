@@ -213,7 +213,8 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
             if (i == leafIndex) {
               currentRootNode.addEntries([MapEntry(unescapeKeySpecificCharacters(segment), unescapeValueSpecificCharacters(segment))]);
             } else {
-              stdout.writeln('    currentRootNode: $currentRootNode');
+              // Writing currentRootNode to output here generates way too much output!
+             // stdout.writeln('    currentRootNode: $currentRootNode');
               stdout.writeln('    segment: $segment');
 
               currentRootNode = currentRootNode[segment];
@@ -443,7 +444,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
 
       final response = await http.post(url, body: body);
 
-      stdout.write(response);
+      //stdout.write(response);
 
       if (response.statusCode != 200) {
         stdout.writeln(
