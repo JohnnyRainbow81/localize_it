@@ -143,23 +143,23 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
       final List<String> translatables = [];
 
       await Future.forEach(dartFiles, (File fileEntity) async {
-        stdout.writeln('     Reading file content of file ${fileEntity.path}...\n');
+        // stdout.writeln('     Reading file content of file ${fileEntity.path}...');
 
         fileContent = await _readFileContent(fileEntity.path);
 
         final regex = RegExp(r"'[^']*(\\'[^']*)*'\.tr");
         Iterable<RegExpMatch> wordMatches = [];
 
-        stdout.writeln('     Getting all matches of fileContent...\n');
+       // stdout.writeln('     Getting all matches of fileContent...\n');
         wordMatches = regex.allMatches(fileContent);
 
         for (final wordMatch in wordMatches) {
           final rawTranslatable = wordMatch.group(0)!;
-          stdout.writeln('     Handling rawTranslatable $rawTranslatable...\n');
+         // stdout.writeln('     Handling rawTranslatable $rawTranslatable...\n');
 
           // Clean up our strings like "'Auth.Login.This is my value'.tr"
           final cleanTranslatable = _cleanRawString(rawTranslatable);
-          stdout.writeln('     Cleaned up translatable: $cleanTranslatable...\n');
+         // stdout.writeln('     Cleaned up translatable: $cleanTranslatable...\n');
 
           translatables.add(cleanTranslatable);
 
