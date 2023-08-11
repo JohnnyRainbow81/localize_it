@@ -215,7 +215,7 @@ class Localizer extends GeneratorForAnnotation<LocalizeItAnnotation> {
             } else {
               // Writing currentRootNode to output here generates way too much output!
              // stdout.writeln('    currentRootNode: $currentRootNode');
-              stdout.writeln('    segment: $segment');
+             // stdout.writeln('    segment: $segment');
 
               currentRootNode = currentRootNode[segment];
             }
